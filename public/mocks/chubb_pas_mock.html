@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chubb PAS — Policy Administration System</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Inter', Arial, sans-serif; background: #f4f6f9; color: #1a1a2e; }
+.header { background: #003087; color: white; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; }
+.header-logo { font-size: 20px; font-weight: 700; letter-spacing: 0.5px; }
+.header-nav { font-size: 13px; opacity: 0.85; }
+.nav-bar { background: #00235e; display: flex; padding: 0 24px; }
+.nav-item { color: #ccd6f6; font-size: 13px; padding: 10px 16px; cursor: pointer; border-bottom: 3px solid transparent; }
+.nav-item.active { color: white; border-bottom-color: #f0a500; }
+.content { padding: 32px; max-width: 1100px; margin: 0 auto; }
+.card { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 28px; margin-bottom: 20px; }
+.card-title { font-size: 15px; font-weight: 600; color: #003087; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid #e8edf4; }
+.form-row { display: flex; gap: 16px; margin-bottom: 14px; }
+.form-group { flex: 1; }
+label { font-size: 12px; color: #666; font-weight: 500; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+input, select { width: 100%; border: 1px solid #d1d9e6; border-radius: 5px; padding: 9px 12px; font-size: 14px; color: #1a1a2e; background: white; outline: none; }
+input:focus, select:focus { border-color: #003087; box-shadow: 0 0 0 2px rgba(0,48,135,0.1); }
+.btn { padding: 10px 22px; border: none; border-radius: 5px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.btn-primary { background: #003087; color: white; }
+.btn-primary:hover { background: #00235e; }
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #003087 0%, #00235e 100%); }
+.login-card { background: white; border-radius: 12px; padding: 44px 40px; width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+.login-logo { text-align: center; font-size: 28px; font-weight: 800; color: #003087; margin-bottom: 6px; }
+.login-sub { text-align: center; font-size: 13px; color: #888; margin-bottom: 28px; }
+.login-field { margin-bottom: 16px; }
+.login-field label { font-size: 12px; color: #555; font-weight: 600; display: block; margin-bottom: 5px; }
+.login-field input { width: 100%; border: 1px solid #dde2ec; border-radius: 6px; padding: 11px 14px; font-size: 14px; }
+.login-btn { width: 100%; padding: 12px; background: #003087; color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+.screen { display: none; }
+.screen.active { display: block; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { background: #f0f4fa; color: #003087; font-weight: 600; padding: 11px 14px; text-align: left; font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; }
+td { padding: 12px 14px; border-bottom: 1px solid #f0f0f0; }
+tr:hover td { background: #f8faff; }
+.badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.badge-active { background: #dcfce7; color: #166534; }
+.detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.detail-item label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+.detail-item p { font-size: 14px; font-weight: 500; color: #1a1a2e; margin-top: 3px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.field-block label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.4px; }
+.field-val { font-size: 14px; padding: 8px 10px; border: 1px solid #dde2ec; border-radius: 5px; min-height: 36px; transition: background 0.4s; }
+.status-bar { background: #003087; color: white; padding: 10px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; text-align: center; margin-top: 16px; display: none; }
+.highlight { background: #fef3c7 !important; }
+</style>
+</head>
+<body>
+<div id="s1" class="screen active">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">CHUBB</div>
+      <div class="login-sub">Policy Administration System — Financial Lines</div>
+      <div class="login-field"><label>Username</label><input id="user" value="demo@chubb.com"></div>
+      <div class="login-field"><label>Password</label><input type="password" id="pass" value="Demo1234"></div>
+      <button class="login-btn" onclick="showScreen('s2')">Sign In</button>
+    </div>
+  </div>
+</div>
+
+<div id="s2" class="screen">
+  <div class="header"><div class="header-logo">CHUBB PAS</div><div class="header-nav">Sarah Park | Financial Institutions UW</div></div>
+  <div class="nav-bar"><div class="nav-item active">Submissions</div><div class="nav-item">Policies</div><div class="nav-item">Accounts</div><div class="nav-item">Reports</div></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Account & Submission Search</div>
+      <div class="form-row">
+        <div class="form-group"><label>Account Name</label><input id="search-input" value="Pinnacle Community Bancorp"></div>
+        <div class="form-group"><label>Line of Business</label><select><option>D&O — Financial Institutions</option></select></div>
+        <div class="form-group"><label>State</label><select><option>All States</option><option>NC</option></select></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:6px;">
+        <button class="btn btn-primary" onclick="showScreen('s3')">Search</button>
+        <button class="btn" style="background:#f4f6f9;color:#333;border:1px solid #ddd;">Clear</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="s3" class="screen">
+  <div class="header"><div class="header-logo">CHUBB PAS</div><div class="header-nav">Sarah Park | Financial Institutions UW</div></div>
+  <div class="nav-bar"><div class="nav-item active">Submissions</div><div class="nav-item">Policies</div><div class="nav-item">Accounts</div><div class="nav-item">Reports</div></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Search Results — "Pinnacle Community Bancorp" — 1 Record Found</div>
+      <table>
+        <thead><tr><th>Account Name</th><th>Policy Number</th><th>Line of Business</th><th>Status</th><th>Underwriter</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600;color:#003087;">Pinnacle Community Bancorp</td>
+            <td>CHB-FI-2024-0042</td>
+            <td>D&O / FI Edition</td>
+            <td><span class="badge badge-active">Active Renewal</span></td>
+            <td>Sarah Chen</td>
+            <td><button class="btn btn-primary" style="padding:6px 14px;font-size:12px;" onclick="showScreen('s4')">View Account</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="s4" class="screen">
+  <div class="header"><div class="header-logo">CHUBB PAS</div><div class="header-nav">Sarah Park | Financial Institutions UW</div></div>
+  <div class="nav-bar"><div class="nav-item active">Submissions</div><div class="nav-item">Policies</div><div class="nav-item">Accounts</div><div class="nav-item">Reports</div></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Account Detail — Pinnacle Community Bancorp</div>
+      <div class="detail-grid">
+        <div class="detail-item"><label>Account Name</label><p>Pinnacle Community Bancorp, Inc.</p></div>
+        <div class="detail-item"><label>Prior Premium</label><p>$298,000</p></div>
+        <div class="detail-item"><label>Broker</label><p>Lockton Companies — Charlotte</p></div>
+        <div class="detail-item"><label>Policy Expiry</label><p>04/01/2025</p></div>
+        <div class="detail-item"><label>Line of Business</label><p>D&O — Financial Institutions Edition</p></div>
+        <div class="detail-item"><label>Incumbent Years</label><p>4 (since 2021)</p></div>
+      </div>
+      <div style="margin-top:18px;">
+        <button class="btn btn-primary" onclick="showScreen('s5')">Open Renewal Submission →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="s5" class="screen">
+  <div class="header"><div class="header-logo">CHUBB PAS</div><div class="header-nav">Sarah Park | Financial Institutions UW</div></div>
+  <div class="nav-bar"><div class="nav-item active">Submissions</div><div class="nav-item">Policies</div><div class="nav-item">Accounts</div><div class="nav-item">Reports</div></div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">FI Data Entry — SUB-2025-0310-PCBK-FI-0042 — Pace Auto-Populating Fields</div>
+      <div class="field-row">
+        <div class="field-block"><label>Named Insured</label><div class="field-val" id="f1"></div></div>
+        <div class="field-block"><label>Institution Type</label><div class="field-val" id="f2"></div></div>
+        <div class="field-block"><label>Total Assets</label><div class="field-val" id="f3"></div></div>
+      </div>
+      <div class="field-row">
+        <div class="field-block"><label>Effective Date</label><div class="field-val" id="f4"></div></div>
+        <div class="field-block"><label>CET1 Capital Ratio</label><div class="field-val" id="f5"></div></div>
+        <div class="field-block"><label>NPA Ratio</label><div class="field-val" id="f6"></div></div>
+      </div>
+      <div class="field-row">
+        <div class="field-block"><label>Regulatory Status</label><div class="field-val" id="f7"></div></div>
+      </div>
+      <div id="status-bar" class="status-bar">✓ Pace Auto-Population Complete — 61 Fields Populated</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 's5') startAutoPopulate();
+}
+function setField(id, val, delay) {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    el.textContent = val;
+    el.classList.add('highlight');
+    setTimeout(() => el.classList.remove('highlight'), 800);
+  }, delay);
+}
+function startAutoPopulate() {
+  setField('f1', 'Pinnacle Community Bancorp, Inc.', 500);
+  setField('f2', 'State-chartered commercial bank — Fed member', 1500);
+  setField('f3', '$4.2B (FY2024)', 2500);
+  setField('f4', '05/01/2025', 3200);
+  setField('f5', '12.4%', 3900);
+  setField('f6', '0.82%', 4700);
+  setField('f7', 'CO-2023-PCBK-01 TERMINATED 12/18/2024 ✓', 5500);
+  setTimeout(() => { document.getElementById('status-bar').style.display = 'block'; }, 6200);
+}
+</script>
+</body>
+</html>

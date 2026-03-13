@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chubb FI Rating Tool</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Arial, sans-serif; background: #f5f5f5; color: #222; }
+.login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #f0f2f5; }
+.login-card { background: white; border-radius: 8px; padding: 40px 36px; width: 360px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+.login-title { font-size: 22px; font-weight: 700; color: #003087; margin-bottom: 4px; }
+.login-sub { font-size: 13px; color: #888; margin-bottom: 24px; }
+.field { margin-bottom: 14px; }
+.field label { font-size: 12px; color: #555; font-weight: 600; display: block; margin-bottom: 4px; }
+.field input { width: 100%; border: 1px solid #ddd; border-radius: 5px; padding: 10px 12px; font-size: 14px; }
+.btn-login { width: 100%; padding: 12px; background: #003087; color: white; border: none; border-radius: 5px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.page-header { background: #003087; color: white; padding: 14px 28px; font-size: 18px; font-weight: 700; }
+.content { padding: 28px; max-width: 900px; margin: 0 auto; }
+.card { background: white; border-radius: 8px; padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 20px; }
+.card-title { font-size: 16px; font-weight: 700; color: #003087; margin-bottom: 20px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-group label { font-size: 12px; color: #666; font-weight: 600; display: block; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.3px; }
+.form-group input, .form-group select { width: 100%; border: 1px solid #ddd; border-radius: 5px; padding: 9px 12px; font-size: 14px; }
+.btn-calc { background: #003087; color: white; border: none; border-radius: 6px; padding: 12px 28px; font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.result-item { background: #f8f9fc; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #e8edf4; }
+.result-item label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.4px; display: block; margin-bottom: 6px; }
+.result-item .val { font-size: 24px; font-weight: 800; color: #003087; }
+.final-card { background: #f0fdf4; border: 2px solid #22c55e; border-radius: 10px; padding: 24px; text-align: center; }
+.final-label { font-size: 13px; color: #166534; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.final-val { font-size: 48px; font-weight: 900; color: #22c55e; }
+.final-sub { font-size: 13px; color: #555; margin-top: 8px; }
+.screen { display: none; }
+.screen.active { display: block; }
+</style>
+</head>
+<body>
+<div id="s1" class="screen active">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-title">FI Rating Tool</div>
+      <div class="login-sub">Chubb North America — Financial Lines</div>
+      <div class="field"><label>Username</label><input value="sarah.park@chubb.com"></div>
+      <div class="field"><label>Password</label><input type="password" value="••••••••"></div>
+      <button class="btn-login" onclick="showScreen('s2')">Sign In</button>
+    </div>
+  </div>
+</div>
+
+<div id="s2" class="screen">
+  <div class="page-header">Chubb FI Rating Tool — D&O Financial Institutions Edition</div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Rating Inputs — Pinnacle Community Bancorp</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Total Assets</label><input value="$2.1B"></div>
+        <div class="form-group"><label>Institution Type</label><select><option selected>Community Bank</option></select></div>
+        <div class="form-group"><label>Public / Private</label><select><option selected>Public (OTC)</option></select></div>
+        <div class="form-group"><label>Prior Claims (5yr)</label><input value="0"></div>
+        <div class="form-group"><label>Regulatory Actions</label><input value="1 Terminated Consent Order"></div>
+        <div class="form-group"><label>Tier 1 Capital Ratio</label><input value="11.2%"></div>
+        <div class="form-group"><label>NPA Ratio</label><input value="1.8%"></div>
+        <div class="form-group"><label>ROA</label><input value="0.92%"></div>
+        <div class="form-group"><label>Limit Requested</label><input value="$10,000,000"></div>
+        <div class="form-group"><label>Retention</label><input value="$500,000"></div>
+      </div>
+      <button class="btn-calc" onclick="showScreen('s3')">Calculate Premium →</button>
+    </div>
+  </div>
+</div>
+
+<div id="s3" class="screen">
+  <div class="page-header">Chubb FI Rating Tool — Premium Output</div>
+  <div class="content">
+    <div class="card">
+      <div class="card-title">Premium Calculation — Pinnacle Community Bancorp</div>
+      <div class="result-grid">
+        <div class="result-item"><label>Base Premium</label><div class="val">$288,000</div></div>
+        <div class="result-item"><label>Regulatory Surcharge</label><div class="val" style="color:#ef4444;">+$48,000</div></div>
+        <div class="result-item"><label>Claims Modifier</label><div class="val" style="color:#888;">0.00%</div></div>
+      </div>
+      <div class="final-card">
+        <div class="final-label">Indicated Final Premium</div>
+        <div class="final-val">$336,000</div>
+        <div class="final-sub">+7.7% over prior year ($312,000) · $25M limit / $1M retention</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>
