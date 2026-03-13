@@ -109,6 +109,17 @@ function startSimulation() {
     }
 }
 
+// Delete stale static data files so in-memory routes take precedence
+try {
+    const staleFiles = [
+        path.join(PUBLIC_DIR, 'data', 'processes.json'),
+        path.join(PUBLIC_DIR, 'data', 'process_SUB-2025-0310-PCBK-FI-0042.json'),
+    ];
+    for (const f of staleFiles) {
+        if (fs.existsSync(f)) { fs.unlinkSync(f); console.log(`Removed stale static: ${f}`); }
+    }
+} catch(e) { console.error('Could not remove stale static files:', e.message); }
+
 const server = http.createServer(async (req, res) => {
     const cleanPath = req.url.split('?')[0];
 
