@@ -11,11 +11,7 @@ const GEMINI_MODEL = process.env.VITE_MODEL || 'gemini-2.5-flash';
 
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const DATA_DIR = path.join(PUBLIC_DIR, 'data');
-const PROCESSES_FILE = path.join(DATA_DIR, 'processes.json');
-const SIGNALS_FILE = path.join(__dirname, 'interaction-signals.json');
-const FEEDBACK_QUEUE_PATH = path.join(__dirname, 'feedbackQueue.json');
 const KB_PATH = path.join(__dirname, 'src', 'data', 'knowledgeBase.md');
-const KB_VERSIONS_PATH = path.join(DATA_DIR, 'kbVersions.json');
 const SNAPSHOTS_DIR = path.join(DATA_DIR, 'snapshots');
 
 const corsHeaders = {
@@ -24,17 +20,37 @@ const corsHeaders = {
     'Access-Control-Allow-Headers': 'Content-Type'
 };
 
-let state = { sent: false, confirmed: false, signals: {} };
+// ── In-memory state (survives Railway's ephemeral filesystem) ──────────────
+const INITIAL_PROCESSES = [
+    {
+        id: "SUB-2025-0310-PCBK-FI-0042",
+        caseId: "SUB-2025-0310-PCBK-FI-0042",
+        namedInsured: "Pinnacle Community Bancorp, Inc.",
+        broker: "Marcus Webb, Gallagher Charlotte",
+        underwriter: "Sarah Park — Financial Institutions",
+        line: "D&O — Financial Institutions Edition",
+        process: "D&O FI Renewal — Regulatory Verification",
+        pathway: "Full Regulatory Verification → Financial Analysis → Triage → Quote",
+        lastUpdated: "2025-03-10",
+        status: "In Progress",
+        currentStatus: "Initializing..."
+    }
+];
+
+let memState = {
+    signals: { underwriter_approval: false },
+    emailSent: false,
+    processes: JSON.parse(JSON.stringify(INITIAL_PROCESSES)),
+    processLogs: {
+        "SUB-2025-0310-PCBK-FI-0042": { logs: [], keyDetails: {}, sidebarArtifacts: [] }
+    },
+    feedbackQueue: [],
+    kbVersions: []
+};
+
 let runningProcesses = new Map();
 
-// Initialize files
-if (!fs.existsSync(PROCESSES_FILE)) {
-    const base = path.join(DATA_DIR, 'base_processes.json');
-    if (fs.existsSync(base)) fs.copyFileSync(base, PROCESSES_FILE);
-}
-if (!fs.existsSync(SIGNALS_FILE)) fs.writeFileSync(SIGNALS_FILE, JSON.stringify({ underwriter_approval: false }, null, 4));
-if (!fs.existsSync(FEEDBACK_QUEUE_PATH)) fs.writeFileSync(FEEDBACK_QUEUE_PATH, '[]');
-if (!fs.existsSync(KB_VERSIONS_PATH)) fs.writeFileSync(KB_VERSIONS_PATH, '[]');
+// Ensure snapshots dir exists (static files like PDFs/videos live here)
 if (!fs.existsSync(SNAPSHOTS_DIR)) fs.mkdirSync(SNAPSHOTS_DIR, { recursive: true });
 
 const mime = {
@@ -56,6 +72,34 @@ async function callGemini(messages, systemPrompt) {
     return result.response.text();
 }
 
+function resetMemState() {
+    memState.signals = { underwriter_approval: false };
+    memState.emailSent = false;
+    memState.processes = JSON.parse(JSON.stringify(INITIAL_PROCESSES));
+    memState.processLogs = {
+        "SUB-2025-0310-PCBK-FI-0042": { logs: [], keyDetails: {}, sidebarArtifacts: [] }
+    };
+    memState.feedbackQueue = [];
+    memState.kbVersions = [];
+}
+
+function startSimulation() {
+    // Kill any existing simulation
+    runningProcesses.forEach((proc) => { try { process.kill(-proc.pid, 'SIGKILL'); } catch(e) {} });
+    runningProcesses.clear();
+    exec('pkill -9 -f "node(.*)simulation_scripts" || true');
+
+    const scriptPath = path.join(__dirname, 'simulation_scripts', 'pinnacle_submission.cjs');
+    console.log(`Starting simulation: ${scriptPath}`);
+    const child = exec(`node "${scriptPath}"`, (error) => {
+        if (error && error.code !== 0) console.error('pinnacle_submission error:', error.message);
+        runningProcesses.delete('SUB-2025-0310-PCBK-FI-0042');
+    });
+    child.stdout && child.stdout.on('data', d => console.log('[sim]', d.toString().trim()));
+    child.stderr && child.stderr.on('data', d => console.error('[sim:err]', d.toString().trim()));
+    if (child.pid) runningProcesses.set('SUB-2025-0310-PCBK-FI-0042', child);
+}
+
 const server = http.createServer(async (req, res) => {
     const cleanPath = req.url.split('?')[0];
 
@@ -65,57 +109,111 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // RESET
+    // ── RESET ────────────────────────────────────────────────────────────────
     if (cleanPath === '/reset' && req.method === 'GET') {
-        state = { sent: false, confirmed: false, signals: {} };
-        fs.writeFileSync(SIGNALS_FILE, JSON.stringify({ underwriter_approval: false }, null, 4));
-        runningProcesses.forEach((proc) => { try { process.kill(-proc.pid, 'SIGKILL'); } catch(e){} });
-        runningProcesses.clear();
-        exec('pkill -9 -f "node(.*)simulation_scripts" || true', (err) => {
-            setTimeout(() => {
-                const cases = [
-                    {
-                        id: "SUB-2025-0310-PCBK-FI-0042",
-                        caseId: "SUB-2025-0310-PCBK-FI-0042",
-                        namedInsured: "Pinnacle Community Bancorp, Inc.",
-                        broker: "Marcus Webb, Gallagher Charlotte",
-                        underwriter: "Sarah Park — Financial Institutions",
-                        line: "D&O — Financial Institutions Edition",
-                        process: "D&O FI Renewal — Regulatory Verification",
-                        pathway: "Full Regulatory Verification → Financial Analysis → Triage → Quote",
-                        lastUpdated: "2025-03-10",
-                        status: "In Progress",
-                        currentStatus: "Initializing..."
-                    }
-                ];
-                fs.writeFileSync(PROCESSES_FILE, JSON.stringify(cases, null, 4));
-                const emptyLog = { logs: [], keyDetails: {}, sidebarArtifacts: [] };
-                fs.writeFileSync(path.join(DATA_DIR, 'process_SUB-2025-0310-PCBK-FI-0042.json'), JSON.stringify(emptyLog, null, 4));
-                fs.writeFileSync(FEEDBACK_QUEUE_PATH, '[]');
-                fs.writeFileSync(KB_VERSIONS_PATH, '[]');
-                const scriptPath = path.join(__dirname, 'simulation_scripts', 'pinnacle_submission.cjs');
-                const child = exec(`node "${scriptPath}" > "${scriptPath}.log" 2>&1`, (error) => {
-                    if (error && error.code !== 0) console.error('pinnacle_submission error:', error.message);
-                    runningProcesses.delete('SUB-2025-0310-PCBK-FI-0042');
-                });
-                if (child.pid) runningProcesses.set('SUB-2025-0310-PCBK-FI-0042', child);
-            }, 1000);
-        });
+        resetMemState();
+        setTimeout(startSimulation, 500);
         res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok' }));
         return;
     }
 
-    // EMAIL STATUS
+    // ── IN-MEMORY: serve processes.json ─────────────────────────────────────
+    if (cleanPath === '/data/processes.json' && req.method === 'GET') {
+        res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(memState.processes));
+        return;
+    }
+
+    // ── IN-MEMORY: serve per-process log ────────────────────────────────────
+    const processLogMatch = cleanPath.match(/^\/data\/process_(.+)\.json$/);
+    if (processLogMatch && req.method === 'GET') {
+        const pid = processLogMatch[1];
+        const log = memState.processLogs[pid] || { logs: [], keyDetails: {}, sidebarArtifacts: [] };
+        res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(log));
+        return;
+    }
+
+    // ── API: update processes list status (called by simulation) ────────────
+    if (cleanPath === '/api/update-status' && req.method === 'POST') {
+        let body = '';
+        req.on('data', d => body += d);
+        req.on('end', () => {
+            try {
+                const p = JSON.parse(body);
+                const idx = memState.processes.findIndex(x => x.id === String(p.id));
+                if (idx !== -1) {
+                    memState.processes[idx].status = p.status;
+                    memState.processes[idx].currentStatus = p.currentStatus;
+                }
+            } catch(e) { console.error('update-status err:', e.message); }
+            res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ status: 'ok' }));
+        });
+        return;
+    }
+
+    // ── API: update process log (called by simulation) ───────────────────────
+    if (cleanPath === '/api/update-process-log' && req.method === 'POST') {
+        let body = '';
+        req.on('data', d => body += d);
+        req.on('end', () => {
+            try {
+                const { processId, logEntry, keyDetails, sidebarArtifacts } = JSON.parse(body);
+                if (!memState.processLogs[processId]) {
+                    memState.processLogs[processId] = { logs: [], keyDetails: {}, sidebarArtifacts: [] };
+                }
+                const log = memState.processLogs[processId];
+                if (logEntry) log.logs.push(logEntry);
+                if (keyDetails) Object.assign(log.keyDetails, keyDetails);
+                if (sidebarArtifacts) {
+                    sidebarArtifacts.forEach(a => {
+                        const existing = log.sidebarArtifacts.findIndex(x => x.id === a.id);
+                        if (existing !== -1) log.sidebarArtifacts[existing] = a;
+                        else log.sidebarArtifacts.push(a);
+                    });
+                }
+            } catch(e) { console.error('update-process-log err:', e.message); }
+            res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ status: 'ok' }));
+        });
+        return;
+    }
+
+    // ── SIGNAL STATUS ─────────────────────────────────────────────────────────
+    if (cleanPath === '/signal-status' && req.method === 'GET') {
+        res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(memState.signals));
+        return;
+    }
+
+    // ── SIGNAL POST ───────────────────────────────────────────────────────────
+    if (cleanPath === '/signal' && req.method === 'POST') {
+        let body = '';
+        req.on('data', d => body += d);
+        req.on('end', () => {
+            try {
+                const p = JSON.parse(body);
+                memState.signals[p.signalId] = true;
+                console.log(`Signal fired: ${p.signalId}`);
+            } catch(e) {}
+            res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ status: 'ok' }));
+        });
+        return;
+    }
+
+    // ── EMAIL STATUS ──────────────────────────────────────────────────────────
     if (cleanPath === '/email-status') {
         if (req.method === 'GET') {
             res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ sent: state.sent }));
+            res.end(JSON.stringify({ sent: memState.emailSent }));
         } else if (req.method === 'POST') {
             let body = '';
             req.on('data', d => body += d);
             req.on('end', () => {
-                try { const p = JSON.parse(body); state.sent = p.sent; } catch(e) {}
+                try { const p = JSON.parse(body); memState.emailSent = p.sent; } catch(e) {}
                 res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ status: 'ok' }));
             });
@@ -123,60 +221,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // SIGNAL STATUS
-    if (cleanPath === '/signal-status' && req.method === 'GET') {
-        try {
-            const signals = fs.existsSync(SIGNALS_FILE) ? JSON.parse(fs.readFileSync(SIGNALS_FILE, 'utf8')) : {};
-            res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(signals));
-        } catch(e) {
-            res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({}));
-        }
-        return;
-    }
-
-    // SIGNAL POST
-    if (cleanPath === '/signal' && req.method === 'POST') {
-        let body = '';
-        req.on('data', d => body += d);
-        req.on('end', () => {
-            try {
-                const p = JSON.parse(body);
-                const signals = fs.existsSync(SIGNALS_FILE) ? JSON.parse(fs.readFileSync(SIGNALS_FILE, 'utf8')) : {};
-                signals[p.signalId] = true;
-                fs.writeFileSync(SIGNALS_FILE, JSON.stringify(signals, null, 4));
-            } catch(e) {}
-            res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ status: 'ok' }));
-        });
-        return;
-    }
-
-    // UPDATE STATUS
-    if (cleanPath === '/api/update-status' && req.method === 'POST') {
-        let body = '';
-        req.on('data', d => body += d);
-        req.on('end', () => {
-            try {
-                const p = JSON.parse(body);
-                if (fs.existsSync(PROCESSES_FILE)) {
-                    const procs = JSON.parse(fs.readFileSync(PROCESSES_FILE, 'utf8'));
-                    const idx = procs.findIndex(x => x.id === String(p.id));
-                    if (idx !== -1) {
-                        procs[idx].status = p.status;
-                        procs[idx].currentStatus = p.currentStatus;
-                        fs.writeFileSync(PROCESSES_FILE, JSON.stringify(procs, null, 4));
-                    }
-                }
-            } catch(e) {}
-            res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ status: 'ok' }));
-        });
-        return;
-    }
-
-    // CHAT
+    // ── CHAT ──────────────────────────────────────────────────────────────────
     if (cleanPath === '/api/chat' && req.method === 'POST') {
         let body = '';
         req.on('data', d => body += d);
@@ -203,7 +248,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // FEEDBACK QUESTIONS
+    // ── FEEDBACK QUESTIONS ────────────────────────────────────────────────────
     if (cleanPath === '/api/feedback/questions' && req.method === 'POST') {
         let body = '';
         req.on('data', d => body += d);
@@ -224,7 +269,7 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // FEEDBACK SUMMARIZE
+    // ── FEEDBACK SUMMARIZE ────────────────────────────────────────────────────
     if (cleanPath === '/api/feedback/summarize' && req.method === 'POST') {
         let body = '';
         req.on('data', d => body += d);
@@ -244,12 +289,11 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // FEEDBACK QUEUE
+    // ── FEEDBACK QUEUE ────────────────────────────────────────────────────────
     if (cleanPath === '/api/feedback/queue') {
         if (req.method === 'GET') {
-            const queue = fs.existsSync(FEEDBACK_QUEUE_PATH) ? JSON.parse(fs.readFileSync(FEEDBACK_QUEUE_PATH, 'utf8')) : [];
             res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ queue }));
+            res.end(JSON.stringify({ queue: memState.feedbackQueue }));
             return;
         }
         if (req.method === 'POST') {
@@ -258,9 +302,7 @@ const server = http.createServer(async (req, res) => {
             req.on('end', () => {
                 try {
                     const item = JSON.parse(body);
-                    const queue = fs.existsSync(FEEDBACK_QUEUE_PATH) ? JSON.parse(fs.readFileSync(FEEDBACK_QUEUE_PATH, 'utf8')) : [];
-                    queue.push({ ...item, status: 'pending', timestamp: new Date().toISOString() });
-                    fs.writeFileSync(FEEDBACK_QUEUE_PATH, JSON.stringify(queue, null, 4));
+                    memState.feedbackQueue.push({ ...item, status: 'pending', timestamp: new Date().toISOString() });
                 } catch(e) {}
                 res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ status: 'ok' }));
@@ -269,44 +311,37 @@ const server = http.createServer(async (req, res) => {
         }
     }
 
-    // FEEDBACK QUEUE DELETE
+    // ── FEEDBACK QUEUE DELETE ─────────────────────────────────────────────────
     const feedbackDeleteMatch = cleanPath.match(/^\/api\/feedback\/queue\/(.+)$/);
     if (feedbackDeleteMatch && req.method === 'DELETE') {
         const id = feedbackDeleteMatch[1];
-        try {
-            const queue = fs.existsSync(FEEDBACK_QUEUE_PATH) ? JSON.parse(fs.readFileSync(FEEDBACK_QUEUE_PATH, 'utf8')) : [];
-            const filtered = queue.filter(item => item.id !== id);
-            fs.writeFileSync(FEEDBACK_QUEUE_PATH, JSON.stringify(filtered, null, 4));
-        } catch(e) {}
+        memState.feedbackQueue = memState.feedbackQueue.filter(item => item.id !== id);
         res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok' }));
         return;
     }
 
-    // FEEDBACK APPLY
+    // ── FEEDBACK APPLY ─────────────────────────────────────────────────────────
     if (cleanPath === '/api/feedback/apply' && req.method === 'POST') {
         let body = '';
         req.on('data', d => body += d);
         req.on('end', async () => {
             try {
                 const { feedbackId } = JSON.parse(body);
-                const queue = fs.existsSync(FEEDBACK_QUEUE_PATH) ? JSON.parse(fs.readFileSync(FEEDBACK_QUEUE_PATH, 'utf8')) : [];
-                const item = queue.find(i => i.id === feedbackId);
+                const item = memState.feedbackQueue.find(i => i.id === feedbackId);
                 if (!item) throw new Error('Feedback item not found');
-                const currentKB = fs.readFileSync(KB_PATH, 'utf8');
+                const currentKB = fs.existsSync(KB_PATH) ? fs.readFileSync(KB_PATH, 'utf8') : '';
                 const prompt = `Apply the following feedback proposal to update this knowledge base. Return only the updated knowledge base markdown.\n\nProposal: ${item.summary}\n\nCurrent KB:\n${currentKB}`;
                 const updatedKB = await callGemini([{ role: 'user', content: prompt }], 'You update knowledge bases based on feedback proposals.');
                 const ts = Date.now();
                 const snapFile = `kb_snapshot_${ts}.md`;
                 const prevFile = `kb_prev_${ts}.md`;
+                if (!fs.existsSync(SNAPSHOTS_DIR)) fs.mkdirSync(SNAPSHOTS_DIR, { recursive: true });
                 fs.writeFileSync(path.join(SNAPSHOTS_DIR, snapFile), updatedKB);
                 fs.writeFileSync(path.join(SNAPSHOTS_DIR, prevFile), currentKB);
-                fs.writeFileSync(KB_PATH, updatedKB);
-                const versions = fs.existsSync(KB_VERSIONS_PATH) ? JSON.parse(fs.readFileSync(KB_VERSIONS_PATH, 'utf8')) : [];
-                versions.unshift({ id: String(ts), timestamp: new Date().toISOString(), snapshotFile: snapFile, previousFile: prevFile, changes: [item.summary] });
-                fs.writeFileSync(KB_VERSIONS_PATH, JSON.stringify(versions, null, 4));
-                const updatedQueue = queue.filter(i => i.id !== feedbackId);
-                fs.writeFileSync(FEEDBACK_QUEUE_PATH, JSON.stringify(updatedQueue, null, 4));
+                if (fs.existsSync(path.dirname(KB_PATH))) fs.writeFileSync(KB_PATH, updatedKB);
+                memState.kbVersions.unshift({ id: String(ts), timestamp: new Date().toISOString(), snapshotFile: snapFile, previousFile: prevFile, changes: [item.summary] });
+                memState.feedbackQueue = memState.feedbackQueue.filter(i => i.id !== feedbackId);
                 res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: true, content: updatedKB }));
             } catch(e) {
@@ -317,18 +352,20 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // KB CONTENT
+    // ── KB CONTENT ─────────────────────────────────────────────────────────────
     if (cleanPath === '/api/kb/content' && req.method === 'GET') {
         try {
             const versionId = new URL(req.url, 'http://localhost').searchParams.get('versionId');
             let content;
             if (versionId) {
-                const versions = fs.existsSync(KB_VERSIONS_PATH) ? JSON.parse(fs.readFileSync(KB_VERSIONS_PATH, 'utf8')) : [];
-                const ver = versions.find(v => v.id === versionId);
-                if (ver) content = fs.readFileSync(path.join(SNAPSHOTS_DIR, ver.snapshotFile), 'utf8');
-                else content = fs.readFileSync(KB_PATH, 'utf8');
+                const ver = memState.kbVersions.find(v => v.id === versionId);
+                if (ver && fs.existsSync(path.join(SNAPSHOTS_DIR, ver.snapshotFile))) {
+                    content = fs.readFileSync(path.join(SNAPSHOTS_DIR, ver.snapshotFile), 'utf8');
+                } else {
+                    content = fs.existsSync(KB_PATH) ? fs.readFileSync(KB_PATH, 'utf8') : '';
+                }
             } else {
-                content = fs.readFileSync(KB_PATH, 'utf8');
+                content = fs.existsSync(KB_PATH) ? fs.readFileSync(KB_PATH, 'utf8') : '';
             }
             res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ content }));
@@ -339,15 +376,14 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // KB VERSIONS
+    // ── KB VERSIONS ────────────────────────────────────────────────────────────
     if (cleanPath === '/api/kb/versions' && req.method === 'GET') {
-        const versions = fs.existsSync(KB_VERSIONS_PATH) ? JSON.parse(fs.readFileSync(KB_VERSIONS_PATH, 'utf8')) : [];
         res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ versions }));
+        res.end(JSON.stringify({ versions: memState.kbVersions }));
         return;
     }
 
-    // KB SNAPSHOT
+    // ── KB SNAPSHOT ────────────────────────────────────────────────────────────
     const snapshotMatch = cleanPath.match(/^\/api\/kb\/snapshot\/(.+)$/);
     if (snapshotMatch && req.method === 'GET') {
         try {
@@ -361,14 +397,14 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // KB UPDATE
+    // ── KB UPDATE ──────────────────────────────────────────────────────────────
     if (cleanPath === '/api/kb/update' && req.method === 'POST') {
         let body = '';
         req.on('data', d => body += d);
         req.on('end', () => {
             try {
                 const { content } = JSON.parse(body);
-                fs.writeFileSync(KB_PATH, content);
+                if (fs.existsSync(path.dirname(KB_PATH))) fs.writeFileSync(KB_PATH, content);
                 res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ status: 'ok' }));
             } catch(e) {
@@ -379,14 +415,20 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // DEBUG PATHS
+    // ── DEBUG PATHS ────────────────────────────────────────────────────────────
     if (cleanPath === '/debug-paths' && req.method === 'GET') {
         res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ dataDir: DATA_DIR, exists: fs.existsSync(DATA_DIR), files: fs.existsSync(DATA_DIR) ? fs.readdirSync(DATA_DIR) : [] }));
+        res.end(JSON.stringify({
+            dataDir: DATA_DIR,
+            exists: fs.existsSync(DATA_DIR),
+            files: fs.existsSync(DATA_DIR) ? fs.readdirSync(DATA_DIR) : [],
+            processCount: memState.processes.length,
+            logKeys: Object.keys(memState.processLogs)
+        }));
         return;
     }
 
-    // STATIC FILES
+    // ── STATIC FILES (videos, PDFs, images, etc.) ─────────────────────────────
     let filePath = path.join(PUBLIC_DIR, cleanPath === '/' ? 'index.html' : cleanPath);
     if (!fs.existsSync(filePath)) filePath = path.join(PUBLIC_DIR, 'index.html');
     if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) filePath = path.join(filePath, 'index.html');
@@ -404,4 +446,6 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
+    // Auto-start simulation on boot
+    setTimeout(startSimulation, 1000);
 });
