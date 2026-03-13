@@ -146,7 +146,11 @@ const server = http.createServer(async (req, res) => {
     // ── IN-MEMORY DATA ROUTES (MUST BE FIRST — before static file handler) ───
     if (cleanPath === '/data/processes.json') {
         res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify(memState.processes, null, 2));
+        const _enriched1 = memState.processes.map(p => {
+            const kd = (memState.processLogs[p.id] || {}).keyDetails || {};
+            return Object.assign({}, p, { keyDetails: kd });
+        });
+        return res.end(JSON.stringify(_enriched1, null, 2));
     }
     const _earlyProcMatch = cleanPath.match(/^\/data\/process_(.+)\.json$/);
     if (_earlyProcMatch) {
@@ -168,7 +172,11 @@ const server = http.createServer(async (req, res) => {
     // ── IN-MEMORY: serve processes.json ─────────────────────────────────────
     if (cleanPath === '/data/processes.json' && req.method === 'GET') {
         res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(memState.processes));
+        const _enriched2 = memState.processes.map(p => {
+            const kd = (memState.processLogs[p.id] || {}).keyDetails || {};
+            return Object.assign({}, p, { keyDetails: kd });
+        });
+        res.end(JSON.stringify(_enriched2));
         return;
     }
 
