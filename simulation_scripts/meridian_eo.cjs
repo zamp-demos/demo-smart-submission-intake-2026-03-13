@@ -258,17 +258,15 @@ async function run() {
       artifacts: [
         { id: 'mspx-s8-hitl-report', type: 'file', label: 'HITL Exception Report', pdfPath: '/data/12_hitl_exception_report_mspx.pdf' },
         {
-          id: 'mspx-s8-exception-email',
-          type: 'email_draft',
-          label: 'Exception Notification — David Chen',
-          data: {
-            from: 'notifications@pace.ai',
-            to: 'david.chen@chubb.com',
-            subject: 'EXCEPTION — Human Review Required | Meridian Strategy Partners E&O Renewal | Case EO-2025-0312-MSPX-PL-0017',
-            isIncoming: false,
-            isSent: true,
-            body: `EXCEPTION — HUMAN REVIEW REQUIRED\n\nCase:    EO-2025-0312-MSPX-PL-0017\nInsured: Meridian Strategy Partners, Inc. (NASDAQ: MSPX)\nLine:    Professional Liability — E&O Renewal\nBroker:  Jennifer Park, Willis Towers Watson Chicago\nUW:      David Chen, Sr. Underwriter — Professions E&O\nEff:     May 1, 2025\n\nEXCEPTION SUMMARY\n\nPace completed an acquisition court records check triggered by the Bridgepoint Advisory LLC acquisition (8-K filed March 6, 2025). The check identified an active E&O claim filed against Bridgepoint Advisory LLC in Cook County Circuit Court (Case No. 2024-L-008471) on July 8, 2024 — Hartwell Manufacturing Group v. Bridgepoint Advisory LLC. Damages claimed: $4,100,000.\n\nBridgepoint became a wholly owned subsidiary of Meridian Strategy Partners on March 5, 2025. The ML Application was signed on March 12, 2025 — 7 days after the acquisition closed. Question 6.3 ("Is the applicant, or any subsidiary or affiliated entity, a party to any pending or threatened claim?") was answered NO. The correct answer is YES.\n\nPace coverage clause analysis confirms the Newly Acquired Entity auto-coverage clause does not extend to this claim (known circumstance carve-out applies). Markel Insurance is currently defending Bridgepoint.\n\nProcessing is paused pending your decision.\n\nHITL OPTIONS\n\n  Option 1 — Proceed as submitted (no action on Q6.3)\n  [RECOMMENDED] Option 2 — Hold; request corrected application from broker\n  Option 3 — Require corrected application + endorsement before quoting\n  Option 4 — Decline to quote; material misrepresentation protocol\n\nRECOMMENDATION: Option 2\nPace recommends Option 2. Weight of evidence supports inadvertent omission rather than deliberate concealment. Option 2 creates a complete paper trail, protects Chubb's coverage position, preserves the broker relationship, and resolves the ambiguity before policy issuance. Expected resolution: broker confirms within 24 hours, corrected application received, Hartwell excluded by endorsement.\n\nFull analysis and coverage clause memo available in the Pace dashboard:\nhttps://pace.chubb.internal/cases/EO-2025-0312-MSPX-PL-0017\n\nPace Smart Commercial Underwriting | Chubb North America Financial Lines\nCase EO-2025-0312-MSPX-PL-0017 | Meridian Strategy Partners, Inc.\nPace processing time to exception: 38 min 41 sec`
-          }
+          id: 'mspx-s8-decision',
+          type: 'decision',
+          label: 'Underwriter Decision Required',
+          options: [
+            { id: 'opt1', label: 'Option 1 — Proceed as submitted (no action on Q6.3)', signal: 'underwriter_decision_opt1' },
+            { id: 'opt2', label: '[RECOMMENDED] Option 2 — Hold; request corrected application from broker', signal: 'underwriter_decision' },
+            { id: 'opt3', label: 'Option 3 — Require corrected application + endorsement before quoting', signal: 'underwriter_decision_opt3' },
+            { id: 'opt4', label: 'Option 4 — Decline to quote; material misrepresentation protocol', signal: 'underwriter_decision_opt4' }
+          ]
         }
       ]
   });
@@ -293,20 +291,7 @@ async function run() {
         'Exception resolved — processing resumed; corrected application expected by 09:00 AM March 13, 2025'
       ],
       artifacts: [
-        { id: 'mspx-s8-hitl-report', type: 'file', label: 'HITL Exception Report', pdfPath: '/data/12_hitl_exception_report_mspx.pdf' },
-        {
-          id: 'mspx-s8-exception-email',
-          type: 'email_draft',
-          label: 'Exception Notification — David Chen',
-          data: {
-            from: 'notifications@pace.ai',
-            to: 'david.chen@chubb.com',
-            subject: 'EXCEPTION — Human Review Required | Meridian Strategy Partners E&O Renewal | Case EO-2025-0312-MSPX-PL-0017',
-            isIncoming: false,
-            isSent: true,
-            body: `EXCEPTION — HUMAN REVIEW REQUIRED\n\nCase:    EO-2025-0312-MSPX-PL-0017\nInsured: Meridian Strategy Partners, Inc. (NASDAQ: MSPX)\nLine:    Professional Liability — E&O Renewal\nBroker:  Jennifer Park, Willis Towers Watson Chicago\nUW:      David Chen, Sr. Underwriter — Professions E&O\nEff:     May 1, 2025\n\nEXCEPTION SUMMARY\n\nPace completed an acquisition court records check triggered by the Bridgepoint Advisory LLC acquisition (8-K filed March 6, 2025). The check identified an active E&O claim filed against Bridgepoint Advisory LLC in Cook County Circuit Court (Case No. 2024-L-008471) on July 8, 2024 — Hartwell Manufacturing Group v. Bridgepoint Advisory LLC. Damages claimed: $4,100,000.\n\nBridgepoint became a wholly owned subsidiary of Meridian Strategy Partners on March 5, 2025. The ML Application was signed on March 12, 2025 — 7 days after the acquisition closed. Question 6.3 ("Is the applicant, or any subsidiary or affiliated entity, a party to any pending or threatened claim?") was answered NO. The correct answer is YES.\n\nPace coverage clause analysis confirms the Newly Acquired Entity auto-coverage clause does not extend to this claim (known circumstance carve-out applies). Markel Insurance is currently defending Bridgepoint.\n\nProcessing is paused pending your decision.\n\nHITL OPTIONS\n\n  Option 1 — Proceed as submitted (no action on Q6.3)\n  [RECOMMENDED] Option 2 — Hold; request corrected application from broker\n  Option 3 — Require corrected application + endorsement before quoting\n  Option 4 — Decline to quote; material misrepresentation protocol\n\nRECOMMENDATION: Option 2\nPace recommends Option 2. Weight of evidence supports inadvertent omission rather than deliberate concealment. Option 2 creates a complete paper trail, protects Chubb's coverage position, preserves the broker relationship, and resolves the ambiguity before policy issuance. Expected resolution: broker confirms within 24 hours, corrected application received, Hartwell excluded by endorsement.\n\nFull analysis: https://pace.chubb.internal/cases/EO-2025-0312-MSPX-PL-0017\n\nDecision recorded: Option 2 selected by David Chen | March 12, 2025 11:14 AM\nSOP EO-EXCEPTION-001 applied to all future E&O and D&O submissions.`
-          }
-        }
+        { id: 'mspx-s8-hitl-report', type: 'file', label: 'HITL Exception Report', pdfPath: '/data/12_hitl_exception_report_mspx.pdf' }
       ]
   });
 
