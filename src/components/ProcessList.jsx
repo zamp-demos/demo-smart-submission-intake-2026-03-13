@@ -67,11 +67,20 @@ const ProcessList = ({ category = 'Data Integrity Review' }) => {
         );
     };
 
+    const getKD = (kd, ...candidates) => {
+        if (!kd) return '—';
+        for (const k of candidates) {
+            if (kd[k] !== undefined && kd[k] !== null && kd[k] !== '') return kd[k];
+        }
+        return '—';
+    };
+
     const columns = [
-        { label: 'Study ID', key: 'stockId' },
-        { label: 'Document Type', key: 'documentType' },
-        { label: 'Data Points', key: 'dataPoints' },
-        { label: 'Risk Level', key: 'riskLevel' }
+        { label: 'Named Insured', render: (p) => getKD(p.keyDetails, 'Named Insured', 'namedInsured') },
+        { label: 'Line of Business', render: (p) => getKD(p.keyDetails, 'Line', 'line') },
+        { label: 'Broker', render: (p) => getKD(p.keyDetails, 'Broker', 'broker') },
+        { label: 'Effective Date', render: (p) => getKD(p.keyDetails, 'Effective Date', 'effectiveDate') },
+        { label: 'Premium Guidance', render: (p) => getKD(p.keyDetails, 'Premium Guidance', 'premiumGuidance') },
     ];
 
     return (
@@ -120,7 +129,7 @@ const ProcessList = ({ category = 'Data Integrity Review' }) => {
                                     Current Status
                                 </th>
                                 {columns.map(col => (
-                                    <th key={col.key} className="px-4 py-2 text-left font-normal whitespace-nowrap">
+                                    <th key={col.label} className="px-4 py-2 text-left font-normal whitespace-nowrap">
                                         {col.label}
                                     </th>
                                 ))}
@@ -160,8 +169,8 @@ const ProcessList = ({ category = 'Data Integrity Review' }) => {
                                     </td>
 
                                     {columns.map(col => (
-                                        <td key={col.key} className="px-4 py-2.5 whitespace-nowrap text-left text-[13px] font-[450] text-[#171717]">
-                                            {process[col.key] || '—'}
+                                        <td key={col.label} className="px-4 py-2.5 whitespace-nowrap text-left text-[13px] font-[450] text-[#171717]">
+                                            {col.render(process)}
                                         </td>
                                     ))}
                                 </tr>

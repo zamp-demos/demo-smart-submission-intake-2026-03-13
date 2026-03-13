@@ -240,7 +240,7 @@ async function run() {
   await addLog({
       step: 8,
       status: 'pending',
-      title: 'HITL Exception: Undisclosed Known Circumstance',
+      title: 'Known Circumstance — Underwriter Review Required',
       reasoning: [
         'ML Application Q6.3 answered NO — confirmed incorrect based on EDGAR 8-K and CourtListener records',
         'Bridgepoint Advisory LLC acquired March 5, 2025; Hartwell Manufacturing Group claim active since July 2024',
@@ -281,7 +281,7 @@ async function run() {
       step: 8,
       replaceStep: 8,
       status: 'complete',
-      title: 'HITL Exception: Undisclosed Known Circumstance',
+      title: 'Known Circumstance — Underwriter Review Required',
       reasoning: [
         'David Chen selected Option 2: Hold; request corrected application from broker',
         'Exception notification sent to Jennifer Park / Willis Towers Watson Chicago at 10:52 AM',
