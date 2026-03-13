@@ -67,8 +67,6 @@ async function run() {
 
   // ── STEP 1: Submission Email Received & Parsed ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 1,
       status: 'complete',
       title: 'Submission Email Received & Parsed',
@@ -94,15 +92,12 @@ async function run() {
           }
         }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 2: Document Classification ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 2,
       status: 'complete',
       title: 'Document Classification',
@@ -118,15 +113,12 @@ async function run() {
       artifacts: [
         { type: 'file', label: 'Document Classification Report', pdfPath: '/data/02_doc_classification_mspx.pdf' }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 3: Completeness Check ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 3,
       status: 'complete',
       title: 'Completeness Check',
@@ -142,15 +134,12 @@ async function run() {
       artifacts: [
         { type: 'file', label: 'Completeness Check Report', pdfPath: '/data/03_completeness_check_mspx.pdf' }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 4: Clearance Check & Loss History Retrieved ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 4,
       status: 'complete',
       title: 'Clearance Check & Loss History Retrieved',
@@ -168,15 +157,12 @@ async function run() {
         { type: 'file', label: 'AIG Loss Run — MSPX 2020–2022', pdfPath: '/data/05_loss_run_aig_mspx.pdf' },
         { type: 'file', label: 'Loss History Analyzer Output', pdfPath: '/data/06_loss_history_analyzer_mspx.pdf' }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 5: EDGAR Verification & 8-K Scan ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 5,
       status: 'complete',
       title: 'EDGAR Verification & 8-K Scan',
@@ -192,15 +178,12 @@ async function run() {
         { type: 'file', label: '8-K Filing — Bridgepoint Acquisition (March 6, 2025)', pdfPath: '/data/08_8k_march2025_bridgepoint.pdf' },
         { type: 'file', label: 'EDGAR Verification Report', pdfPath: '/data/09_edgar_verification_mspx.pdf' }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 6: Court Records Search ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 6,
       status: 'complete',
       title: 'Court Records Search — Bridgepoint Advisory LLC',
@@ -216,15 +199,12 @@ async function run() {
       artifacts: [
         { type: 'file', label: 'Court Record — Cook County 2024-L-008471', pdfPath: '/data/10_court_record_cook_county.pdf' }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 7: Known Circumstances & Coverage Clause Analysis ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 7,
       status: 'complete',
       title: 'Known Circumstances & Coverage Clause Analysis',
@@ -239,15 +219,12 @@ async function run() {
       artifacts: [
         { type: 'file', label: 'Known Circumstances Coverage Analysis', pdfPath: '/data/11_known_circumstances_mspx.pdf' }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 8: HITL Exception (pre-signal) ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 8,
       status: 'pending',
       title: 'HITL Exception: Undisclosed Known Circumstance',
@@ -280,7 +257,6 @@ async function run() {
           }
         }
       ]
-    }
   });
 
   await updateProcess(PROCESS_ID, 'Needs Attention', 'Awaiting underwriter decision — undisclosed known circumstance');
@@ -290,8 +266,6 @@ async function run() {
 
   // ── STEP 8 REPLACE (post-signal) ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 8,
       replaceStep: 8,
       status: 'complete',
@@ -319,7 +293,6 @@ async function run() {
           }
         }
       ]
-    }
   });
 
   await sleep(1200);
@@ -327,8 +300,6 @@ async function run() {
 
   // ── STEP 9: Broker Response & Corrected Application ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 9,
       status: 'complete',
       title: 'Broker Response & Corrected Application Received',
@@ -355,15 +326,12 @@ async function run() {
           }
         }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 10: Structured Data Extraction & System Population ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 10,
       status: 'complete',
       title: 'Structured Data Extraction & System Population',
@@ -380,15 +348,12 @@ async function run() {
         { type: 'video', label: 'PAS Population Recording', videoPath: '/data/PAS_Population_MSPX_Recording.mp4' },
         { type: 'video', label: 'Rating Tool Input Recording', videoPath: '/data/Rating_Tool_Input_MSPX_Recording.mp4' }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 11: Financial Analysis ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 11,
       status: 'complete',
       title: 'Financial Analysis',
@@ -403,15 +368,12 @@ async function run() {
       artifacts: [
         { type: 'file', label: 'Financial Analysis Report', pdfPath: '/data/18_financial_analysis_mspx.pdf' }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 12: Loss Run Analysis ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 12,
       status: 'complete',
       title: 'Loss Run Analysis',
@@ -427,15 +389,12 @@ async function run() {
         { type: 'file', label: 'Loss Run Analysis Report', pdfPath: '/data/19_loss_run_analysis_mspx.pdf' },
         { type: 'file', label: 'Chubb Loss Run — MSPX (Cross-Reference)', pdfPath: '/data/04_loss_run_chubb_mspx.pdf' }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 13: Appetite Triage & Routing Decision ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 13,
       status: 'complete',
       title: 'Appetite Triage & Routing Decision',
@@ -462,15 +421,12 @@ async function run() {
           }
         }
       ]
-    }
   });
 
   await sleep(1500);
 
   // ── STEP 14: Quote Letter Generated (pre-signal, pending) ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 14,
       status: 'pending',
       title: 'Quote Letter Generated & Queued for Underwriter Approval',
@@ -486,7 +442,6 @@ async function run() {
         { type: 'video', label: 'Rating Tool Final Output Recording', videoPath: '/data/Rating_Tool_Final_MSPX_Recording.mp4' },
         { type: 'file', label: 'Draft Quote Letter', pdfPath: '/data/23_draft_quote_letter_mspx.pdf' }
       ]
-    }
   });
 
   await updateProcess(PROCESS_ID, 'Needs Attention', 'Awaiting underwriter approval — quote ready for release');
@@ -496,8 +451,6 @@ async function run() {
 
   // ── STEP 14 REPLACE (post quote_approved signal) ──
   await addLog({
-    processId: PROCESS_ID,
-    logEntry: {
       step: 14,
       replaceStep: 14,
       status: 'complete',
@@ -526,7 +479,6 @@ async function run() {
           }
         }
       ]
-    }
   });
 
   await updateProcess(PROCESS_ID, 'Complete', 'Quote issued — binding subject to Hartwell exclusion endorsement');
