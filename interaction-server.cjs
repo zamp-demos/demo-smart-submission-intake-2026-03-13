@@ -129,6 +129,19 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
+    // ── IN-MEMORY DATA ROUTES (MUST BE FIRST — before static file handler) ───
+    if (cleanPath === '/data/processes.json') {
+        res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(memState.processes, null, 2));
+    }
+    const _earlyProcMatch = cleanPath.match(/^\/data\/process_(.+)\.json$/);
+    if (_earlyProcMatch) {
+        const _pid = _earlyProcMatch[1];
+        const _data = memState.processLogs[_pid] || { id: _pid, logs: [], sidebarArtifacts: [], keyDetails: {}, currentStatus: 'Initializing...' };
+        res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(_data, null, 2));
+    }
+
     // ── RESET ────────────────────────────────────────────────────────────────
     if (cleanPath === '/reset' && req.method === 'GET') {
         resetMemState();
