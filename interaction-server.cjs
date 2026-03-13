@@ -199,7 +199,15 @@ const server = http.createServer(async (req, res) => {
                     memState.processLogs[processId] = { logs: [], keyDetails: {}, sidebarArtifacts: [] };
                 }
                 const log = memState.processLogs[processId];
-                if (logEntry) log.logs.push(logEntry);
+                if (logEntry) {
+                    if (logEntry.replaceStep !== undefined) {
+                        const idx = log.logs.findIndex(l => l.step === logEntry.replaceStep);
+                        if (idx !== -1) { log.logs[idx] = logEntry; }
+                        else { log.logs.push(logEntry); }
+                    } else {
+                        log.logs.push(logEntry);
+                    }
+                }
                 if (keyDetails) Object.assign(log.keyDetails, keyDetails);
                 if (sidebarArtifacts) {
                     sidebarArtifacts.forEach(a => {
