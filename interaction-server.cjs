@@ -450,7 +450,7 @@ const server = http.createServer(async (req, res) => {
     } else {
 
     // DEBUG endpoint
-    if (method === 'GET' && urlPath === '/debug') {
+    if (method === 'GET' && cleanPath === '/debug') {
         const summary = {
             simRunning,
             simLastError: global.__simLastError || null,
