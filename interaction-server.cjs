@@ -437,7 +437,22 @@ const server = http.createServer(async (req, res) => {
         return;
     }
 
-    // ── STATIC FILES (videos, PDFs, images, etc.) ─────────────────────────────
+    // ── DEBUG endpoint ─────────────────────────────────────────────
+    if (cleanPath === '/debug') {
+        const summary = {
+            simRunning,
+            simLastError: global.__simLastError || null,
+            processCount: memState.processes.length,
+            logsCount: Object.keys(memState.processLogs).reduce((a,k) => a + (memState.processLogs[k]?.logs?.length||0), 0),
+            artifactsCount: Object.keys(memState.processLogs).reduce((a,k) => a + (memState.processLogs[k]?.sidebarArtifacts?.length||0), 0),
+            currentStatus: memState.processes[0]?.currentStatus || 'unknown',
+            uptime: Math.round(process.uptime())
+        };
+        res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(summary, null, 2));
+    }
+
+        // ── STATIC FILES (videos, PDFs, images, etc.) ─────────────────────────────
     let filePath = path.join(PUBLIC_DIR, cleanPath === '/' ? 'index.html' : cleanPath);
     if (!fs.existsSync(filePath)) filePath = path.join(PUBLIC_DIR, 'index.html');
     if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) filePath = path.join(filePath, 'index.html');
@@ -448,22 +463,6 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(200, { ...corsHeaders, 'Content-Type': contentType });
         fs.createReadStream(filePath).pipe(res);
     } else {
-
-    // DEBUG endpoint
-    if (method === 'GET' && cleanPath === '/debug') {
-        const summary = {
-            simRunning,
-            simLastError: global.__simLastError || null,
-            processCount: memState.processes.length,
-            logsCount: Object.keys(memState.processLogs).reduce((a, k) => a + (memState.processLogs[k]?.logs?.length || 0), 0),
-            artifactsCount: Object.keys(memState.processLogs).reduce((a, k) => a + (memState.processLogs[k]?.sidebarArtifacts?.length || 0), 0),
-            currentStatus: memState.processes[0]?.currentStatus || 'unknown',
-            uptime: Math.round(process.uptime())
-        };
-        res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
-        return res.end(JSON.stringify(summary, null, 2));
-    }
-
         res.writeHead(404, corsHeaders);
         res.end('Not found');
     }
