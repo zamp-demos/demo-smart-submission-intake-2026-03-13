@@ -637,15 +637,7 @@ const CollapsibleReasoning = ({ reasons }) => {
                     <div className="space-y-1">
                         {reasons.map((r, i) => {
                             let content = r;
-                            let marker = <span className="text-gray-300 select-none">•</span>;
-
-                            if (r.startsWith('(G)') || r.includes('✓')) {
-                                marker = <span className="text-green-500 select-none text-base leading-none">●</span>;
-                                content = r.replace('(G)', '').replace('✓', '').trim();
-                            } else if (r.startsWith('(R)') || r.includes('❌') || r.includes('⚠️')) {
-                                marker = <span className="text-red-500 select-none text-base leading-none">●</span>;
-                                content = r.replace('(R)', '').replace('❌', '').replace('⚠️', '').trim();
-                            }
+                            let marker = <span className="text-gray-400 select-none">—</span>;
 
                             return (
                                 <div key={i} className="flex gap-2 text-xs text-gray-500 leading-tight items-start">
