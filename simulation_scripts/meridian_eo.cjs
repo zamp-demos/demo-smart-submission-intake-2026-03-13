@@ -53,34 +53,17 @@ async function waitForSignal(signalId, intervalMs = 3000) {
 }
 
 async function addLog(entry) {
-  await post('/add-log', entry);
+  await post('/api/update-process-log', { processId: PROCESS_ID, logEntry: entry });
 }
 
 async function updateProcess(id, status, currentStatus) {
-  await post('/update-process', { id, status, currentStatus });
+  await post('/api/update-status', { id, status, currentStatus });
 }
 
 async function run() {
   console.log('Starting Meridian E&O simulation...');
 
-  // Register process
-  await post('/add-log', {
-    processId: PROCESS_ID,
-    initProcess: {
-      id: PROCESS_ID,
-      name: 'Meridian Strategy Partners E&O Renewal',
-      status: 'Needs Attention',
-      currentStatus: 'Processing submission...',
-      submittedBy: 'Jennifer Park — Willis Towers Watson Chicago',
-      effectiveDate: 'May 1, 2025',
-      lineOfBusiness: 'Professional Liability — E&O',
-      premium: '$231,000',
-      broker: 'Willis Towers Watson Chicago',
-      underwriter: 'David Chen, Sr. Underwriter — Professions E&O'
-    }
-  });
-
-  await sleep(1200);
+  await sleep(500);
 
   // ── STEP 1: Submission Email Received & Parsed ──
   await addLog({
