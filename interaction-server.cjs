@@ -104,6 +104,7 @@ function startSimulation() {
         });
     } catch(e) {
         console.error('Failed to start simulation:', e.message);
+        global.__simLastError = e.message;
         simRunning = false;
     }
 }
@@ -447,6 +448,22 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(200, { ...corsHeaders, 'Content-Type': contentType });
         fs.createReadStream(filePath).pipe(res);
     } else {
+
+    // DEBUG endpoint
+    if (method === 'GET' && urlPath === '/debug') {
+        const summary = {
+            simRunning,
+            simLastError: global.__simLastError || null,
+            processCount: memState.processes.length,
+            logsCount: Object.keys(memState.processLogs).reduce((a, k) => a + (memState.processLogs[k]?.logs?.length || 0), 0),
+            artifactsCount: Object.keys(memState.processLogs).reduce((a, k) => a + (memState.processLogs[k]?.sidebarArtifacts?.length || 0), 0),
+            currentStatus: memState.processes[0]?.currentStatus || 'unknown',
+            uptime: Math.round(process.uptime())
+        };
+        res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify(summary, null, 2));
+    }
+
         res.writeHead(404, corsHeaders);
         res.end('Not found');
     }
