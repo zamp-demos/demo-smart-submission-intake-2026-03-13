@@ -33,6 +33,19 @@ const INITIAL_PROCESSES = [
         lastUpdated: "2025-03-10",
         status: "In Progress",
         currentStatus: "Initializing..."
+    },
+    {
+        id: "EO-2025-0312-MSPX-PL-0017",
+        caseId: "EO-2025-0312-MSPX-PL-0017",
+        namedInsured: "Meridian Strategy Partners Inc.",
+        broker: "Jennifer Park — Willis Towers Watson Chicago",
+        underwriter: "David Chen — Sr. Underwriter, Professions E&O",
+        line: "Professional Liability — E&O Renewal",
+        process: "E&O Renewal — Known Circumstances Review",
+        pathway: "Known Circumstances → Court Record → Financial Analysis → Quote",
+        lastUpdated: "2025-03-12",
+        status: "In Progress",
+        currentStatus: "Initializing..."
     }
 ];
 
@@ -75,7 +88,8 @@ function resetMemState() {
     memState.emailSent = false;
     memState.processes = JSON.parse(JSON.stringify(INITIAL_PROCESSES));
     memState.processLogs = {
-        "SUB-2025-0310-PCBK-FI-0042": { logs: [], keyDetails: {}, sidebarArtifacts: [] }
+        "SUB-2025-0310-PCBK-FI-0042": { logs: [], keyDetails: {}, sidebarArtifacts: [] },
+        "EO-2025-0312-MSPX-PL-0017": { logs: [], keyDetails: {}, sidebarArtifacts: [] }
     };
     memState.feedbackQueue = [];
     memState.kbVersions = [];
@@ -146,7 +160,6 @@ const server = http.createServer(async (req, res) => {
     if (cleanPath === '/reset' && req.method === 'GET') {
         simRunning = false;  // force-unlock so startSimulation won't skip
         resetMemState();
-        setTimeout(startSimulation, 200);
         res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok' }));
         return;

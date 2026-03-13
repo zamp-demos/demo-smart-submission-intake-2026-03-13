@@ -430,7 +430,7 @@ sarah.park@chubb.com | (215) 882-5000`;
         await addArtifact({ id: "uw_notif_draft", type: "email_draft", label: "Underwriter Notification — Sarah Park", data: { from: "pace-notifications@zamp.ai", to: "sarah.park@chubb.com", subject: "[Pace] Action Required — Quote Ready for Approval | PCBK D&O FI Renewal | Case SUB-2025-0310-PCBK-FI-0042", body: UW_NOTIF_BODY } });
 
         // —— STEP 11 (pre-HITL) ————————————————————————————————————————
-        await updateStatus("Needs Attention", "Step 11 of 11 — Quote Letter Generated & Queued for Underwriter Approval");
+        await updateStatus("Needs Review", "Step 11 of 11 — Quote Letter Generated & Queued for Underwriter Approval");
         await addLog({
             step: 11,
             title: "Quote Letter Generated & Queued for Underwriter Approval",
