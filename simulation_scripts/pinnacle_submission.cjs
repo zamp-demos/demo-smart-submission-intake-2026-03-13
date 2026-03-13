@@ -53,7 +53,7 @@ function runSimulation(port) {
                     }).on('error', reject);
                 });
                 const parsed = JSON.parse(data);
-                if (parsed.signals && parsed.signals[signalId]) return;
+                if (parsed[signalId] === true) return;
             } catch(e) {}
             await new Promise(r => setTimeout(r, 2000));
         }
