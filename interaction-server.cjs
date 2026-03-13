@@ -3,7 +3,6 @@ try { require('dotenv').config(); } catch(e) {}
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { exec } = require('child_process');
 
 const PORT = process.env.PORT || 3001;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -48,7 +47,6 @@ let memState = {
     kbVersions: []
 };
 
-let runningProcesses = new Map();
 
 // Ensure snapshots dir exists (static files like PDFs/videos live here)
 if (!fs.existsSync(SNAPSHOTS_DIR)) fs.mkdirSync(SNAPSHOTS_DIR, { recursive: true });
@@ -83,21 +81,31 @@ function resetMemState() {
     memState.kbVersions = [];
 }
 
-function startSimulation() {
-    // Kill any existing simulation
-    runningProcesses.forEach((proc) => { try { process.kill(-proc.pid, 'SIGKILL'); } catch(e) {} });
-    runningProcesses.clear();
-    exec('pkill -9 -f "node(.*)simulation_scripts" || true');
+let simRunning = false;
 
-    const scriptPath = path.join(__dirname, 'simulation_scripts', 'pinnacle_submission.cjs');
-    console.log(`Starting simulation: ${scriptPath}`);
-    const child = exec(`node "${scriptPath}"`, (error) => {
-        if (error && error.code !== 0) console.error('pinnacle_submission error:', error.message);
-        runningProcesses.delete('SUB-2025-0310-PCBK-FI-0042');
-    });
-    child.stdout && child.stdout.on('data', d => console.log('[sim]', d.toString().trim()));
-    child.stderr && child.stderr.on('data', d => console.error('[sim:err]', d.toString().trim()));
-    if (child.pid) runningProcesses.set('SUB-2025-0310-PCBK-FI-0042', child);
+function startSimulation() {
+    if (simRunning) {
+        console.log('Simulation already running, skipping');
+        return;
+    }
+    console.log('Starting simulation in-process...');
+    simRunning = true;
+    try {
+        // Clear require cache so re-runs work after /reset
+        const simPath = require.resolve('./simulation_scripts/pinnacle_submission.cjs');
+        delete require.cache[simPath];
+        const { runSimulation } = require('./simulation_scripts/pinnacle_submission.cjs');
+        runSimulation(PORT).then(() => {
+            console.log('Simulation complete');
+            simRunning = false;
+        }).catch(e => {
+            console.error('Simulation error:', e.message);
+            simRunning = false;
+        });
+    } catch(e) {
+        console.error('Failed to start simulation:', e.message);
+        simRunning = false;
+    }
 }
 
 const server = http.createServer(async (req, res) => {
