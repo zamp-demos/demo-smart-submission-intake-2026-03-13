@@ -157,10 +157,10 @@ const DashboardLayout = () => {
                             isActive={location.pathname === '/data'}
                         />
                         <SidebarItem
-                            to="/done/people"
+                            to="/smart-submission-intake/people"
                             icon={<Users />}
                             label="People"
-                            isActive={location.pathname === '/done/people'}
+                            isActive={location.pathname === '/smart-submission-intake/people'}
                         />
                     </div>
 
@@ -170,7 +170,7 @@ const DashboardLayout = () => {
                             <Plus size={14} className="text-[#cacaca] cursor-pointer hover:text-[#8f8f8f]" />
                         </div>
                         <SidebarItem
-                            to="/done/smart-submission-intake"
+                            to="/smart-submission-intake"
                             icon={<Activity />}
                             label="Smart Submission Intake"
                             isActive={location.pathname.includes('smart-submission-intake') || isProcessDetailPage}
@@ -227,7 +227,7 @@ const DashboardLayout = () => {
                         <div className="flex items-center gap-2 text-[13px]">
                             {location.pathname.includes('/knowledge-base') ? (
                                 <>
-                                    <button onClick={() => navigate('/done/smart-submission-intake')} className="hover:bg-white rounded p-1 transition-colors">
+                                    <button onClick={() => navigate('/smart-submission-intake')} className="hover:bg-white rounded p-1 transition-colors">
                                         <ArrowLeft className="w-3.5 h-3.5 text-[#171717]" />
                                     </button>
                                     <span className="text-[#8f8f8f] font-normal">Smart Submission Intake /</span>
@@ -235,7 +235,7 @@ const DashboardLayout = () => {
                                 </>
                             ) : isProcessDetailPage ? (
                                 <>
-                                    <button onClick={() => navigate('/done/smart-submission-intake')} className="hover:bg-white rounded p-1 transition-colors">
+                                    <button onClick={() => navigate('/smart-submission-intake')} className="hover:bg-white rounded p-1 transition-colors">
                                         <ArrowLeft className="w-3.5 h-3.5 text-[#171717]" />
                                     </button>
                                     <span className="text-[#171717] font-[550]">Smart Submission Intake</span>
@@ -269,7 +269,7 @@ const DashboardLayout = () => {
                     {/* Right: Actions */}
                     <div className="flex items-center gap-2 px-4">
                         <button
-                            onClick={() => navigate(`/done/knowledge-base?category=dir`)}
+                            onClick={() => navigate('/smart-submission-intake/knowledge-base')}
                             className="group relative p-1.5 hover:bg-white rounded-md border border-[#f0f0f0] bg-[#FAFAFA] shadow-sm transition-colors"
                         >
                             <BookOpen className="w-4 h-4 text-[#666666]" />
