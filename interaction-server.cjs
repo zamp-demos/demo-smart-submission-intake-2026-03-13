@@ -3,6 +3,7 @@ try { require('dotenv').config(); } catch(e) {}
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { spawn } = require('child_process');
 
 const PORT = process.env.PORT || 3001;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -97,31 +98,49 @@ function resetMemState() {
 
 let simRunning = false;
 
-function startSimulation() {
+function startBothSims() {
     if (simRunning) {
-        console.log('Simulation already running, skipping');
+        console.log('Sims already running, skipping');
         return;
     }
-    console.log('Starting simulation in-process...');
     simRunning = true;
-    try {
-        // Clear require cache so re-runs work after /reset
-        const simPath = require.resolve('./simulation_scripts/pinnacle_submission.cjs');
-        delete require.cache[simPath];
-        const { runSimulation } = require('./simulation_scripts/pinnacle_submission.cjs');
-        runSimulation(PORT).then(() => {
-            console.log('Simulation complete');
-            simRunning = false;
-        }).catch(e => {
-            console.error('Simulation error:', e.message);
-            simRunning = false;
-        });
-    } catch(e) {
-        console.error('Failed to start simulation:', e.message);
-        global.__simLastError = e.message;
-        simRunning = false;
-    }
+    console.log('Auto-starting both simulations...');
+
+    const simDir = path.join(__dirname, 'simulation_scripts');
+
+    // Spawn Case 1 (Pinnacle)
+    const sim1 = spawn('node', [path.join(simDir, 'pinnacle_submission.cjs')], {
+        detached: false, stdio: ['ignore', 'pipe', 'pipe']
+    });
+    sim1.stdout.on('data', d => console.log('[SIM1]', d.toString().trim()));
+    sim1.stderr.on('data', d => console.error('[SIM1 ERR]', d.toString().trim()));
+    sim1.on('exit', code => console.log('[SIM1] exited', code));
+
+    // Spawn Case 2 (Meridian)
+    const sim2 = spawn('node', [path.join(simDir, 'meridian_eo.cjs')], {
+        detached: false, stdio: ['ignore', 'pipe', 'pipe']
+    });
+    sim2.stdout.on('data', d => console.log('[SIM2]', d.toString().trim()));
+    sim2.stderr.on('data', d => console.error('[SIM2 ERR]', d.toString().trim()));
+    sim2.on('exit', code => console.log('[SIM2] exited', code));
+
+    // Fire HITL signals automatically:
+    // After 38s: Case 1 step 11 HITL (underwriter_approval) + Case 2 step 8 HITL (underwriter_decision)
+    setTimeout(() => {
+        console.log('[AUTO-SIGNAL] Firing underwriter_approval + underwriter_decision');
+        memState.signals['underwriter_approval'] = true;
+        memState.signals['underwriter_decision'] = true;
+    }, 38000);
+
+    // After 38+90=128s: Case 2 step 14 HITL (quote_approved)
+    setTimeout(() => {
+        console.log('[AUTO-SIGNAL] Firing quote_approved');
+        memState.signals['quote_approved'] = true;
+    }, 128000);
 }
+
+// Keep startSimulation as alias for boot compat
+function startSimulation() { startBothSims(); }
 
 // Delete stale static data files so in-memory routes take precedence
 try {
@@ -162,10 +181,12 @@ const server = http.createServer(async (req, res) => {
 
     // ── RESET ────────────────────────────────────────────────────────────────
     if (cleanPath === '/reset' && req.method === 'GET') {
-        simRunning = false;  // force-unlock so startSimulation won't skip
+        simRunning = false;  // force-unlock so startBothSims won't skip
         resetMemState();
         res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok' }));
+        // Auto-restart both sims after reset so dashboard self-heals
+        setTimeout(startBothSims, 300);
         return;
     }
 
