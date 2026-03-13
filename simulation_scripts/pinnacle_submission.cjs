@@ -505,3 +505,6 @@ sarah.park@chubb.com | (215) 882-5000`;
 }
 
 module.exports = { runSimulation };
+
+// Self-invoke when run directly
+if (require.main === module) { runSimulation(); }
