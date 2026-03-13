@@ -50,7 +50,7 @@ const INITIAL_PROCESSES = [
 ];
 
 let memState = {
-    signals: { underwriter_approval: false },
+    signals: { underwriter_approval: false, underwriter_decision: false, quote_approved: false },
     emailSent: false,
     processes: JSON.parse(JSON.stringify(INITIAL_PROCESSES)),
     processLogs: {
@@ -84,7 +84,7 @@ async function callGemini(messages, systemPrompt) {
 }
 
 function resetMemState() {
-    memState.signals = { underwriter_approval: false };
+    memState.signals = { underwriter_approval: false, underwriter_decision: false, quote_approved: false };
     memState.emailSent = false;
     memState.processes = JSON.parse(JSON.stringify(INITIAL_PROCESSES));
     memState.processLogs = {
@@ -250,8 +250,8 @@ const server = http.createServer(async (req, res) => {
         req.on('end', () => {
             try {
                 const p = JSON.parse(body);
-                memState.signals[p.signalId] = true;
-                console.log(`Signal fired: ${p.signalId}`);
+                const sigId = p.signalId || p.signal;
+                if (sigId) { memState.signals[sigId] = true; console.log(`Signal fired: ${sigId}`); }
             } catch(e) {}
             res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ status: 'ok' }));

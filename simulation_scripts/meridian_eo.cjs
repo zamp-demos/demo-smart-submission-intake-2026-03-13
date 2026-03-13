@@ -52,9 +52,11 @@ async function waitForSignal(signalId, intervalMs = 3000) {
   }
 }
 
-async function addLog(entry) {
+async function addLog(entry, keyDetails) {
   const sidebarArtifacts = entry.artifacts || [];
-  await post('/api/update-process-log', { processId: PROCESS_ID, logEntry: entry, sidebarArtifacts });
+  const payload = { processId: PROCESS_ID, logEntry: entry, sidebarArtifacts };
+  if (keyDetails) payload.keyDetails = keyDetails;
+  await post('/api/update-process-log', payload);
 }
 
 async function updateProcess(id, status, currentStatus) {
@@ -81,6 +83,7 @@ async function run() {
       ],
       artifacts: [
         {
+          id: 'mspx-s1-inbound-email',
           type: 'email_draft',
           label: 'Inbound Submission Email',
           data: {
@@ -93,6 +96,15 @@ async function run() {
           }
         }
       ]
+  }, {
+    namedInsured: 'Meridian Strategy Partners, Inc.',
+    ticker: 'NASDAQ: MSPX',
+    broker: 'Jennifer Park — WTW',
+    line: 'E&O — Professional Liability',
+    transactionType: 'Renewal',
+    effectiveDate: 'May 1, 2025',
+    priorPolicy: 'CHB-EOPL-MSPX-2022',
+    premiumGuidance: '$224,000'
   });
 
   await sleep(1500);
@@ -112,7 +124,7 @@ async function run() {
         'No unclassified or ambiguous documents — completeness check queued'
       ],
       artifacts: [
-        { type: 'file', label: 'Document Classification Report', pdfPath: '/data/02_doc_classification_mspx.pdf' }
+        { id: 'mspx-s2-doc-class', type: 'file', label: 'Document Classification Report', pdfPath: '/data/02_doc_classification_mspx.pdf' }
       ]
   });
 
@@ -133,7 +145,7 @@ async function run() {
         'Completeness score: 93.6% — Q6 gap flagged for follow-up but does not block processing'
       ],
       artifacts: [
-        { type: 'file', label: 'Completeness Check Report', pdfPath: '/data/03_completeness_check_mspx.pdf' }
+        { id: 'mspx-s3-completeness', type: 'file', label: 'Completeness Check Report', pdfPath: '/data/03_completeness_check_mspx.pdf' }
       ]
   });
 
@@ -153,10 +165,10 @@ async function run() {
         'Bridgepoint Advisory LLC subsidiary checked: no prior Chubb relationship identified'
       ],
       artifacts: [
-        { type: 'video', label: 'PAS Clearance Recording', videoPath: '/data/PAS_Clearance_MSPX_Recording.mp4' },
-        { type: 'file', label: 'Chubb Loss Run — MSPX 2022–2025', pdfPath: '/data/04_loss_run_chubb_mspx.pdf' },
-        { type: 'file', label: 'AIG Loss Run — MSPX 2020–2022', pdfPath: '/data/05_loss_run_aig_mspx.pdf' },
-        { type: 'file', label: 'Loss History Analyzer Output', pdfPath: '/data/06_loss_history_analyzer_mspx.pdf' }
+        { id: 'mspx-s4-pas-video', type: 'video', label: 'PAS Clearance Recording', videoPath: '/data/PAS_Clearance_MSPX_Recording.mp4' },
+        { id: 'mspx-s4-chubb-loss-run', type: 'file', label: 'Chubb Loss Run — MSPX 2022–2025', pdfPath: '/data/04_loss_run_chubb_mspx.pdf' },
+        { id: 'mspx-s4-aig-loss-run', type: 'file', label: 'AIG Loss Run — MSPX 2020–2022', pdfPath: '/data/05_loss_run_aig_mspx.pdf' },
+        { id: 'mspx-s4-loss-analyzer', type: 'file', label: 'Loss History Analyzer Output', pdfPath: '/data/06_loss_history_analyzer_mspx.pdf' }
       ]
   });
 
@@ -176,8 +188,8 @@ async function run() {
         'ML Application Q6.3 conflict identified: acquisition + active litigation confirmed via 8-K; Q6.3 answered NO — flagged for court records verification'
       ],
       artifacts: [
-        { type: 'file', label: '8-K Filing — Bridgepoint Acquisition (March 6, 2025)', pdfPath: '/data/08_8k_march2025_bridgepoint.pdf' },
-        { type: 'file', label: 'EDGAR Verification Report', pdfPath: '/data/09_edgar_verification_mspx.pdf' }
+        { id: 'mspx-s5-8k-filing', type: 'file', label: '8-K Filing — Bridgepoint Acquisition (March 6, 2025)', pdfPath: '/data/08_8k_march2025_bridgepoint.pdf' },
+        { id: 'mspx-s5-edgar', type: 'file', label: 'EDGAR Verification Report', pdfPath: '/data/09_edgar_verification_mspx.pdf' }
       ]
   });
 
@@ -198,7 +210,7 @@ async function run() {
         'Known circumstance confirmed: claim existed before policy inception date — coverage clause analysis triggered'
       ],
       artifacts: [
-        { type: 'file', label: 'Court Record — Cook County 2024-L-008471', pdfPath: '/data/10_court_record_cook_county.pdf' }
+        { id: 'mspx-s6-court-record', type: 'file', label: 'Court Record — Cook County 2024-L-008471', pdfPath: '/data/10_court_record_cook_county.pdf' }
       ]
   });
 
@@ -218,7 +230,7 @@ async function run() {
         'Coverage analysis conclusion: Chubb exposure is not materially increased by Bridgepoint acquisition, but Q6.3 misrepresentation creates application integrity issue requiring correction'
       ],
       artifacts: [
-        { type: 'file', label: 'Known Circumstances Coverage Analysis', pdfPath: '/data/11_known_circumstances_mspx.pdf' }
+        { id: 'mspx-s7-known-circ', type: 'file', label: 'Known Circumstances Coverage Analysis', pdfPath: '/data/11_known_circumstances_mspx.pdf' }
       ]
   });
 
@@ -244,8 +256,9 @@ async function run() {
         { id: 'opt4', label: 'Option 4', description: 'Decline to quote; material misrepresentation protocol' }
       ],
       artifacts: [
-        { type: 'file', label: 'HITL Exception Report', pdfPath: '/data/12_hitl_exception_report_mspx.pdf' },
+        { id: 'mspx-s8-hitl-report', type: 'file', label: 'HITL Exception Report', pdfPath: '/data/12_hitl_exception_report_mspx.pdf' },
         {
+          id: 'mspx-s8-exception-email',
           type: 'email_draft',
           label: 'Exception Notification — David Chen',
           data: {
@@ -280,8 +293,9 @@ async function run() {
         'Exception resolved — processing resumed; corrected application expected by 09:00 AM March 13, 2025'
       ],
       artifacts: [
-        { type: 'file', label: 'HITL Exception Report', pdfPath: '/data/12_hitl_exception_report_mspx.pdf' },
+        { id: 'mspx-s8-hitl-report', type: 'file', label: 'HITL Exception Report', pdfPath: '/data/12_hitl_exception_report_mspx.pdf' },
         {
+          id: 'mspx-s8-exception-email',
           type: 'email_draft',
           label: 'Exception Notification — David Chen',
           data: {
@@ -313,8 +327,9 @@ async function run() {
         'Application integrity restored — Hartwell claim documented, exclusion endorsement path confirmed'
       ],
       artifacts: [
-        { type: 'file', label: 'Corrected ML Application — E&O', pdfPath: '/data/14_ml_application_eo_corrected.pdf' },
+        { id: 'mspx-s9-corrected-app', type: 'file', label: 'Corrected ML Application — E&O', pdfPath: '/data/14_ml_application_eo_corrected.pdf' },
         {
+          id: 'mspx-s9-broker-confirm',
           type: 'email_draft',
           label: 'Broker Confirmation — Jennifer Park',
           data: {
@@ -346,8 +361,8 @@ async function run() {
         'E&O Rating Tool: initial data load complete — combined revenue and headcount reflect post-acquisition entity'
       ],
       artifacts: [
-        { type: 'video', label: 'PAS Population Recording', videoPath: '/data/PAS_Population_MSPX_Recording.mp4' },
-        { type: 'video', label: 'Rating Tool Input Recording', videoPath: '/data/Rating_Tool_Input_MSPX_Recording.mp4' }
+        { id: 'mspx-s10-pas-pop-video', type: 'video', label: 'PAS Population Recording', videoPath: '/data/PAS_Population_MSPX_Recording.mp4' },
+        { id: 'mspx-s10-rating-input-video', type: 'video', label: 'Rating Tool Input Recording', videoPath: '/data/Rating_Tool_Input_MSPX_Recording.mp4' }
       ]
   });
 
@@ -367,7 +382,7 @@ async function run() {
         'Financial health score: 87/100 — strong, well above Chubb E&O underwriting threshold of 65'
       ],
       artifacts: [
-        { type: 'file', label: 'Financial Analysis Report', pdfPath: '/data/18_financial_analysis_mspx.pdf' }
+        { id: 'mspx-s11-financial', type: 'file', label: 'Financial Analysis Report', pdfPath: '/data/18_financial_analysis_mspx.pdf' }
       ]
   });
 
@@ -387,8 +402,8 @@ async function run() {
         'Loss run analysis conclusion: 5-year E&O loss ratio = 0.0% — supports favorable renewal terms'
       ],
       artifacts: [
-        { type: 'file', label: 'Loss Run Analysis Report', pdfPath: '/data/19_loss_run_analysis_mspx.pdf' },
-        { type: 'file', label: 'Chubb Loss Run — MSPX (Cross-Reference)', pdfPath: '/data/04_loss_run_chubb_mspx.pdf' }
+        { id: 'mspx-s12-loss-analysis', type: 'file', label: 'Loss Run Analysis Report', pdfPath: '/data/19_loss_run_analysis_mspx.pdf' },
+        { id: 'mspx-s12-chubb-crossref', type: 'file', label: 'Chubb Loss Run — MSPX (Cross-Reference)', pdfPath: '/data/04_loss_run_chubb_mspx.pdf' }
       ]
   });
 
@@ -408,8 +423,9 @@ async function run() {
         'Underwriter notification sent: David Chen alerted, draft quote letter ready for review and approval'
       ],
       artifacts: [
-        { type: 'file', label: 'Appetite Triage Evaluation', pdfPath: '/data/20_appetite_triage_mspx.pdf' },
+        { id: 'mspx-s13-appetite', type: 'file', label: 'Appetite Triage Evaluation', pdfPath: '/data/20_appetite_triage_mspx.pdf' },
         {
+          id: 'mspx-s13-uw-notify',
           type: 'email_draft',
           label: 'Ready for Review — Underwriter Notification',
           data: {
@@ -440,8 +456,8 @@ async function run() {
         'Awaiting underwriter approval to release quote to Jennifer Park / Willis Towers Watson Chicago'
       ],
       artifacts: [
-        { type: 'video', label: 'Rating Tool Final Output Recording', videoPath: '/data/Rating_Tool_Final_MSPX_Recording.mp4' },
-        { type: 'file', label: 'Draft Quote Letter', pdfPath: '/data/23_draft_quote_letter_mspx.pdf' }
+        { id: 'mspx-s14-rating-final-video', type: 'video', label: 'Rating Tool Final Output Recording', videoPath: '/data/Rating_Tool_Final_MSPX_Recording.mp4' },
+        { id: 'mspx-s14-draft-quote', type: 'file', label: 'Draft Quote Letter', pdfPath: '/data/23_draft_quote_letter_mspx.pdf' }
       ]
   });
 
@@ -465,9 +481,10 @@ async function run() {
         'Case EO-2025-0312-MSPX-PL-0017 complete — quote issued, binding subject to endorsement execution'
       ],
       artifacts: [
-        { type: 'video', label: 'Rating Tool Final Output Recording', videoPath: '/data/Rating_Tool_Final_MSPX_Recording.mp4' },
-        { type: 'file', label: 'Draft Quote Letter', pdfPath: '/data/23_draft_quote_letter_mspx.pdf' },
+        { id: 'mspx-s14-rating-final-video', type: 'video', label: 'Rating Tool Final Output Recording', videoPath: '/data/Rating_Tool_Final_MSPX_Recording.mp4' },
+        { id: 'mspx-s14-draft-quote', type: 'file', label: 'Draft Quote Letter', pdfPath: '/data/23_draft_quote_letter_mspx.pdf' },
         {
+          id: 'mspx-s14-quote-issued',
           type: 'email_draft',
           label: 'Quote Issued — Jennifer Park',
           data: {

@@ -1251,7 +1251,7 @@ const ProcessDetails = () => {
                                                                         strokeWidth={1.5}
                                                                         style={isPendingEmail && artifact.type !== 'email_draft' ? { filter: 'invert(1) brightness(2)' } : {}}
                                                                     />
-                                                                    <span className={`text-xs font-normal ${isPendingEmail ? 'text-white' : 'text-black'}`}>
+                                                                    <span className={`text-xs font-normal truncate max-w-[140px] ${isPendingEmail ? 'text-white' : 'text-black'}`} style={{display:'block'}}>
                                                                         {artifact.label}
                                                                     </span>
                                                                 </button>
@@ -1464,7 +1464,7 @@ const ProcessDetails = () => {
                                                 strokeWidth={1.5}
                                                 style={isPendingEmail && artifact.type !== 'email_draft' ? { filter: 'invert(1) brightness(2)' } : {}}
                                             />
-                                            <span className={`text-xs font-normal ${isPendingEmail ? 'text-white' : 'text-black'}`}>
+                                            <span className={`text-xs font-normal truncate max-w-[140px] ${isPendingEmail ? 'text-white' : 'text-black'}`} style={{display:'block'}}>
                                                 {artifact.label}
                                             </span>
                                         </button>
