@@ -1043,11 +1043,11 @@ const ProcessDetails = () => {
     const canGoDown = currentIndex < allProcesses.length - 1;
 
     const handleNavigateUp = () => {
-        if (canGoUp) navigate(`/done/process/${allProcesses[currentIndex - 1].id}`);
+        if (canGoUp) navigate(`/smart-submission-intake/process/${allProcesses[currentIndex - 1].id}`);
     };
 
     const handleNavigateDown = () => {
-        if (canGoDown) navigate(`/done/process/${allProcesses[currentIndex + 1].id}`);
+        if (canGoDown) navigate(`/smart-submission-intake/process/${allProcesses[currentIndex + 1].id}`);
     };
 
     const getIconComponent = (iconType) => {
