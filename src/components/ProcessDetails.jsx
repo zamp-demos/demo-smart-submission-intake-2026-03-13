@@ -864,7 +864,7 @@ Bird Infrastructure Procurement Team`;
 };
 
 const ProcessDetails = () => {
-    const { id } = useParams();
+    const { processId: id } = useParams();
     const navigate = useNavigate();
     const [processMetadata, setProcessMetadata] = useState(() => {
         // Hydrate from sessionStorage if available
