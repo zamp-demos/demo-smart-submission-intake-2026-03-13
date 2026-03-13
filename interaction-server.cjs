@@ -144,8 +144,9 @@ const server = http.createServer(async (req, res) => {
 
     // ── RESET ────────────────────────────────────────────────────────────────
     if (cleanPath === '/reset' && req.method === 'GET') {
+        simRunning = false;  // force-unlock so startSimulation won't skip
         resetMemState();
-        setTimeout(startSimulation, 500);
+        setTimeout(startSimulation, 200);
         res.writeHead(200, { ...corsHeaders, 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok' }));
         return;
@@ -495,5 +496,5 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT}`);
     // Auto-start simulation on boot
-    setTimeout(startSimulation, 1000);
+    setTimeout(startSimulation, 200);
 });
