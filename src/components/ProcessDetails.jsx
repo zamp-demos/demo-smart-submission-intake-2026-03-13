@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import Insights from './Insights';
 import { FileText, Video, Database, ChevronUp, ChevronDown, Check, Maximize2, Loader2, Star, MonitorPlay, Image as ImageIcon, Table as TableIcon, Send, X, Trash2, ArrowLeft, MoreHorizontal, Minimize2, Bold, Italic, Underline, AlignLeft, List, Link, Asterisk, Presentation, ArrowUp, ArrowDown, Activity, ExternalLink, Search, Minus, Plus as PlusIcon, RotateCw, Download, Printer, Pin, Menu, Filter, Sliders, Layout, LayoutGrid } from 'lucide-react';
 
 
@@ -873,6 +874,7 @@ const ProcessDetails = () => {
     const [confirmedDecisions, setConfirmedDecisions] = useState(new Set());
     const [artifactWidth, setArtifactWidth] = useState(800);
     const [isResizing, setIsResizing] = useState(false);
+    const [activeTab, setActiveTab] = useState('timeline');
 
     useEffect(() => {
         const handleMouseMove = (e) => {
@@ -1179,8 +1181,31 @@ const ProcessDetails = () => {
                     </div>
                 </div>
 
+                {/* Tab Bar */}
+                <div className="flex border-b border-[#f0f0f0] px-6">
+                    <button
+                        onClick={() => setActiveTab('timeline')}
+                        className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors mr-2 ${activeTab === 'timeline' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    >
+                        Timeline
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('insights')}
+                        className={`py-3 px-4 text-sm font-medium border-b-2 transition-colors ${activeTab === 'insights' ? 'border-black text-black' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    >
+                        Insights
+                    </button>
+                </div>
+
+                {/* Insights Tab */}
+                {activeTab === 'insights' && (
+                    <div className="flex-1 overflow-y-auto px-8 py-4">
+                        <Insights />
+                    </div>
+                )}
+
                 {/* Activity Timeline */}
-                <div className="flex-1 overflow-y-auto">
+                {activeTab === 'timeline' && <div className="flex-1 overflow-y-auto">
                     {/* Today Divider */}
                     <div className="flex items-center py-6 px-8">
                         <div className="flex-grow border-t border-gray-200"></div>

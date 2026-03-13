@@ -470,7 +470,6 @@ sarah.park@chubb.com | (215) 882-5000`;
                 "Quote Letter issued to Marcus Webb at Gallagher Charlotte via secure email.",
                 "Underwriter notification sent to Sarah Park confirming broker delivery.",
                 "Case status updated: Done — Proceed to Quote.",
-                "Total Pace processing time: 4 min 11 sec. Underwriter review time: 1 hr 22 min."
             ],
             artifacts: [
                 {
