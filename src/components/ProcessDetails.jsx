@@ -174,20 +174,20 @@ const DocumentViewer = ({ artifact, onClose }) => {
                 </div>
 
                 {/* Floating bottom nav */}
-                <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-[#1a1a1a]/90 px-4 py-2 rounded-lg text-white text-xs backdrop-blur-sm shadow-xl z-30">
+                <div className="absolute bottom-10 flex items-center gap-4 bg-[#1a1a1a] bg-opacity-90 px-4 py-2 rounded-lg text-white text-xs backdrop-blur-sm shadow-xl z-30" style={{left:"50%",transform:"translateX(-50%)"}}>
                     <button className="hover:text-gray-300"><Search className="w-4 h-4" /></button>
-                    <div className="h-4 w-px bg-white/20"></div>
+                    <div className="h-4 w-px bg-white bg-opacity-20"></div>
                     <div className="flex items-center gap-2">
                         <button className="hover:text-gray-300" onClick={() => setActivePage(Math.max(1, activePage - 1))}><ChevronUp className="w-4 h-4" /></button>
                         <span className="min-w-[40px] text-center font-medium">{activePage} / {totalPages}</span>
                         <button className="hover:text-gray-300" onClick={() => setActivePage(Math.min(totalPages, activePage + 1))}><ChevronDown className="w-4 h-4" /></button>
                     </div>
-                    <div className="h-4 w-px bg-white/20"></div>
+                    <div className="h-4 w-px bg-white bg-opacity-20"></div>
                     <div className="flex items-center gap-3">
                         <button className="hover:text-gray-300" onClick={() => setZoom(Math.max(25, zoom - 10))}><Minus className="w-4 h-4" /></button>
                         <button className="hover:text-gray-300" onClick={() => setZoom(Math.min(300, zoom + 10))}><PlusIcon className="w-4 h-4" /></button>
                     </div>
-                    <div className="h-4 w-px bg-white/20"></div>
+                    <div className="h-4 w-px bg-white bg-opacity-20"></div>
                     <button className="hover:text-gray-300"><Maximize2 className="w-4 h-4" /></button>
                 </div>
             </div>
@@ -254,7 +254,7 @@ const DatasetViewer = ({ artifact, onClose }) => {
                         <Download className="w-4 h-4 cursor-pointer hover:text-gray-600 transition-colors" />
                         <Sliders className="w-4 h-4 cursor-pointer hover:text-gray-600 transition-colors" />
                         <ExternalLink className="w-4 h-4 cursor-pointer hover:text-gray-600 transition-colors" />
-                        <div className="flex items-center border border-gray-200 rounded-[6px] p-0.5 bg-gray-50/50">
+                        <div className="flex items-center border border-gray-200 rounded-[6px] p-0.5 bg-gray-50 bg-opacity-50">
                             <button
                                 onClick={() => setViewMode('list')}
                                 title="Switch to List View"
@@ -302,7 +302,7 @@ const DatasetViewer = ({ artifact, onClose }) => {
                             <tbody className="divide-y divide-gray-100 bg-white">
                                 {isTableArtifact ? (
                                     artifact.data.map((row, i) => (
-                                        <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                                        <tr key={i} className="hover:bg-gray-50 bg-opacity-50 transition-colors">
                                             {Object.values(row).map((val, j) => (
                                                 <td key={j} className="px-4 py-2 text-[11px] text-black border-r border-gray-100 whitespace-nowrap overflow-hidden text-ellipsis">
                                                     {val?.toString() || '—'}
@@ -311,7 +311,7 @@ const DatasetViewer = ({ artifact, onClose }) => {
                                         </tr>
                                     ))
                                 ) : (
-                                    <tr className="hover:bg-gray-50/50 transition-colors">
+                                    <tr className="hover:bg-gray-50 bg-opacity-50 transition-colors">
                                         {Object.values(editableData).map((val, j) => (
                                             <td key={j} className="px-4 py-2 text-[11px] text-black border-r border-gray-100 whitespace-nowrap overflow-hidden text-ellipsis">
                                                 {val || '—'}
@@ -574,14 +574,10 @@ const DecisionViewer = ({ artifact, onClose }) => {
                         {options && options.map((option) => (
                             <label
                                 key={option.value}
-                                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedOption?.value === option.value
-                                    ? 'border-gray-900 bg-gray-50 shadow-sm'
-                                    : 'border-gray-200 hover:border-gray-300 bg-white'
-                                    }`}
+                                className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedOption?.value === option.value ? 'border-gray-900 bg-gray-50 shadow-sm' : 'border-gray-200 hover:border-gray-300 bg-white'}`}
                             >
                                 <div className="pt-0.5">
-                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${selectedOption?.value === option.value ? 'border-gray-900' : 'border-gray-300'
-                                        }`}>
+                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${selectedOption?.value === option.value ? 'border-gray-900' : 'border-gray-300'}`}>
                                         {selectedOption?.value === option.value && (
                                             <div className="w-2 h-2 rounded-full bg-gray-900" />
                                         )}
@@ -752,8 +748,7 @@ Bird Infrastructure Procurement Team`;
                     {messages.map((msg) => (
                         <div key={msg.id} className={`flex flex-col ${msg.sender === "procurement@bird.com" ? "items-end" : "items-start"}`}>
                             <div className="text-[10px] text-gray-400 mb-0.5">{msg.sender === "procurement@bird.com" ? "You" : "Applicant"} • {msg.time}</div>
-                            <div className={`px-2 py-1.5 rounded text-xs max-w-[85%] ${msg.sender === "procurement@bird.com" ? "bg-black text-white rounded-br-none" : "bg-white border border-gray-200 text-gray-800 rounded-bl-none"
-                                }`}>
+                            <div className={`px-2 py-1.5 rounded text-xs max-w-[85%] ${msg.sender === "procurement@bird.com" ? "bg-black text-white rounded-br-none" : "bg-white border border-gray-200 text-gray-800 rounded-bl-none"}`}>
                                 {msg.content}
                             </div>
                             {msg.attachment && onArtifactClick && (
@@ -1205,7 +1200,8 @@ const ProcessDetails = () => {
                 )}
 
                 {/* Activity Timeline */}
-                {activeTab === 'timeline' && <div className="flex-1 overflow-y-auto">
+                {activeTab === 'timeline' && (
+                    <div className="flex-1 overflow-y-auto">
                     {/* Today Divider */}
                     <div className="flex items-center py-6 px-8">
                         <div className="flex-grow border-t border-gray-200"></div>
@@ -1233,17 +1229,12 @@ const ProcessDetails = () => {
                                             {/* Continuous vertical line spine */}
                                             {(!isLastItem || index > 0) && (
                                                 <div
-                                                    className={`absolute w-[1px] bg-[#E5E7EB] left-1/2 -translate-x-1/2 
-                                                        ${index === 0 ? 'top-[15px]' : 'top-0'} 
-                                                        ${isLastItem ? 'h-[15px]' : 'bottom-0'}`}
+                                                    className={`absolute w-[1px] bg-[#E5E7EB] ${index === 0 ? 'top-[15px]' : 'top-0'} ${isLastItem ? 'h-[15px]' : 'bottom-0'}`} style={{left:"50%",transform:"translateX(-50%)"}}
                                                 ></div>
                                             )}
                                             <div className="relative z-10 bg-white py-[9.5px]">
                                                 <div
-                                                    className={`w-[11px] h-[11px] border transition-all duration-300 ${isError || isWarning ? "bg-[#FFDADA] border-[#A40000] rounded-[2px]" :
-                                                        isComplete ? "bg-[#E6F3EA] border-[#66B280] rounded-[2px]" :
-                                                            "bg-[#DADAFF] border-[#0000A4] animate-square-to-diamond"
-                                                        }`}
+                                                    className={`w-[11px] h-[11px] border transition-all duration-300 ${isError || isWarning ? "bg-[#FFDADA] border-[#A40000] rounded-[2px]" : isComplete ? "bg-[#E6F3EA] border-[#66B280] rounded-[2px]" : "bg-[#DADAFF] border-[#0000A4] animate-square-to-diamond"}`}
                                                 />
                                             </div>
                                         </div>
@@ -1266,10 +1257,7 @@ const ProcessDetails = () => {
                                                                 <button
                                                                     key={artifact.id}
                                                                     onClick={() => handleArtifactClick(artifact)}
-                                                                    className={`inline-flex items-center gap-2 px-2 py-1 rounded-[6px] transition-all text-left border-none ${isPendingEmail
-                                                                        ? 'bg-[#1a1a1a] hover:bg-black'
-                                                                        : 'bg-[#f2f2f2] hover:bg-gray-200'
-                                                                        }`}
+                                                                    className={`inline-flex items-center gap-2 px-2 py-1 rounded-[6px] transition-all text-left border-none ${isPendingEmail ? 'bg-[#1a1a1a] hover:bg-black' : 'bg-[#f2f2f2] hover:bg-gray-200'}`}
                                                                 >
                                                                     <IconComponent
                                                                         className={`h-3.5 w-3.5 flex-shrink-0 ${isPendingEmail ? 'text-white' : 'text-black'}`}
@@ -1306,14 +1294,14 @@ const ProcessDetails = () => {
                                                                             />
                                                                             <div className="absolute w-2 h-2 bg-black rounded-full scale-0 peer-checked:scale-100 transition-transform"></div>
                                                                         </div>
-                                                                        <span className={`text-xs font-medium transition-colors ${confirmedDecisions.has(decision.id) && selectedOptions[decision.id]?.label !== option.label ? 'text-gray-400' : 'text-gray-600 group-hover:text-gray-900'}`}>{option.label}</span>
+                                                                        <span className={['text-xs font-medium transition-colors', confirmedDecisions.has(decision.id) && selectedOptions[decision.id]?.label !== option.label ? 'text-gray-400' : 'text-gray-600 group-hover:text-gray-900'].join(' ')}>{option.label}</span>
                                                                     </label>
                                                                 ))}
                                                             </div>
                                                             {!confirmedDecisions.has(decision.id) && (
                                                                 <div className="flex justify-start pt-1">
                                                                     <button
-                                                                        className="px-6 py-2 bg-black text-white text-xs font-bold rounded hover:bg-black/90 transition-all shadow-md active:scale-95 disabled:opacity-50"
+                                                                        className="px-6 py-2 bg-black text-white text-xs font-bold rounded hover:bg-gray-900 transition-all shadow-md active:scale-95 disabled:opacity-50"
                                                                         disabled={!selectedOptions[decision.id]}
                                                                         onClick={async (e) => {
                                                                             const option = selectedOptions[decision.id];
@@ -1325,7 +1313,7 @@ const ProcessDetails = () => {
                                                                             btn.disabled = true;
 
                                                                             try {
-                                                                                await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/signal`, {
+                                                                                await fetch((import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/signal', {
                                                                                     method: 'POST',
                                                                                     headers: { 'Content-Type': 'application/json' },
                                                                                     body: JSON.stringify({ signal: option.signal || option.action || option.id })
@@ -1358,6 +1346,7 @@ const ProcessDetails = () => {
                         </div>
                     </div>
                 </div>
+                )}
             </div>
 
             {/* Right Side Pane - Dynamic Artifact Viewer */}
@@ -1365,13 +1354,13 @@ const ProcessDetails = () => {
                 <div className="flex flex-1 h-full overflow-hidden relative">
                     {/* Resize Handle */}
                     <div
-                        className="absolute left-0 top-0 w-1 h-full cursor-col-resize z-50 group hover:bg-black/5 transition-colors"
+                        className="absolute left-0 top-0 w-1 h-full cursor-col-resize z-50 group hover:bg-gray-100 transition-colors"
                         onMouseDown={(e) => {
                             e.preventDefault();
                             setIsResizing(true);
                         }}
                     >
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[4px] h-12 bg-gray-200 rounded-full group-hover:bg-gray-400 group-active:bg-gray-600 transition-colors border border-white shadow-sm"></div>
+                        <div className="absolute w-[4px] h-12 bg-gray-200 rounded-full group-hover:bg-gray-400 group-active:bg-gray-600 transition-colors border border-white shadow-sm" style={{top:"50%",left:"50%",transform:"translate(-50%,-50%)"}}></div>
                     </div>
 
                     <div
@@ -1479,10 +1468,7 @@ const ProcessDetails = () => {
                                         <button
                                             key={artifact.id}
                                             onClick={() => handleArtifactClick(artifact)}
-                                            className={`inline-flex items-center gap-2 px-2 py-1 rounded-[6px] transition-all text-left border-none ${isPendingEmail
-                                                ? 'bg-[#1a1a1a] hover:bg-black'
-                                                : 'bg-[#f2f2f2] hover:bg-gray-200'
-                                                }`}
+                                            className={`inline-flex items-center gap-2 px-2 py-1 rounded-[6px] transition-all text-left border-none ${isPendingEmail ? 'bg-[#1a1a1a] hover:bg-black' : 'bg-[#f2f2f2] hover:bg-gray-200'}`}
                                         >
                                             <IconComponent
                                                 className={`h-3.5 w-3.5 flex-shrink-0 ${isPendingEmail ? 'text-white' : 'text-black'}`}
