@@ -53,7 +53,8 @@ async function waitForSignal(signalId, intervalMs = 3000) {
 }
 
 async function addLog(entry) {
-  await post('/api/update-process-log', { processId: PROCESS_ID, logEntry: entry });
+  const sidebarArtifacts = entry.artifacts || [];
+  await post('/api/update-process-log', { processId: PROCESS_ID, logEntry: entry, sidebarArtifacts });
 }
 
 async function updateProcess(id, status, currentStatus) {
